@@ -1,6 +1,8 @@
 # SteamDBCrowler
 SteamDBCrowler
 
+https://github.com/HenriqueAugustoMiranda/SteamDBCrowler/issues/3
+
 Guia Rápido de Git e Controle de Branches
 
     Configuração Inicial
