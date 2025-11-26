@@ -9,6 +9,7 @@ YELLOW = "\033[33m"
 BLUE = "\033[34m"
 RESET = "\033[0m"
 
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=100):
     
@@ -26,7 +27,7 @@ def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=100):
 
     for attempt in range(retries):
         try:
-            response = requests.get(url, params=params, timeout=15)#,  proxies=get_proxy())
+            response = requests.get(url, headers=HEADERS, params=params, timeout=15)#,  proxies=get_proxy())
             response.raise_for_status()
             data = response.json()
             return data
