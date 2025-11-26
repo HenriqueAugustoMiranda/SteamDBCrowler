@@ -1,3 +1,9 @@
+# Ignorar o crowler inteiro
 crowler/
-*.pyc
+
+# Ignorar arquivos de ambiente
 .env
+
+# Ignorar arquivos Python compilados
+*.pyc
+__pycache__/
