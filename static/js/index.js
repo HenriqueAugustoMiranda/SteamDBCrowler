@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <img src="${img}" class="ak-img" alt="${skin.nome}">
       <p>US$ ${skin.preco}</p>
       <button class="visualizar-btn">Visualizar</button>
-      <button id="save-btn" class="save-btn"><img src="asstes/diskette.png" style="width:13px; height:13px;"></button>
+      <button id="save-btn" class="save-btn"><img src="../asstes/diskette.png" style="width:13px; height:13px;"></button>
     `;
       div.querySelector('.visualizar-btn').onclick = () => {
         window.location.href = `detalhe.html?nome=${encodeURIComponent(skin.nome)}`;
