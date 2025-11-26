@@ -18,19 +18,6 @@ def write_out(msg: str):
     except:
         pass
 
-
-def update_one_skin(skin_name):
-    try:
-        msg = f"{BLUE}[...]{RESET} Coletando skin: {skin_name} da Steam..."
-        print(msg); write_out(msg)
-
-        skin = sksc.get_skin(skin_name)
-        
-    except Exception as e:
-        msg = f"{RED}[ERRO]{RESET} Erro durante a execução: {e}"
-        print(msg); write_out(msg)
-
-
 def populate_DB():
     try:
         msg = f"{BLUE}[...]{RESET} Coletando skins da Steam..."

@@ -66,31 +66,3 @@ def get_all_skins(tag_weapon=["tag_weapon_elite"], max_pages=50):
         total_count = float('inf')
 
     return all_skins
-
-def get_skin(skin_name):
-
-    item = sk.fetch_skin_by_name(skin_name)  
-
-    if not item:
-        print(f"{YELLOW}[WARN]{RESET} Skin '{skin_name}' não encontrada.")
-        return None
-
-    skin_data = {
-        # Informações de Identificação
-        "name": unquote(skin_name),
-        "hash_name": skin_name,
-
-        # Informações de Mercado
-        "sell_listings": item.get("sell_listings", 0),
-        "sell_price": item.get("sell_price_text", ""),
-        "sale_price_text": item.get("sale_price_text", ""),
-    }
-
-    print(f"{GREEN}[OK]{RESET} Skin '{skin_name}' carregada com sucesso.")
-    for key, value in skin_data.items():
-        print(f"  {key}: {value}")
-        
-    return skin_data
-
-#x = str(input())
-#get_skin(x)
