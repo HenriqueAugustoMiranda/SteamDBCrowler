@@ -6,7 +6,7 @@ import time
 import random
 
 app = Flask(__name__)
-CORS(app)  # Libera requisições do seu site
+CORS(app)
 
 @app.route("/update", methods=["POST"])
 
@@ -21,7 +21,7 @@ def fetch_skin_by_name(skin_name, start=0, count=10, retries=100):
         "search_descriptions": 0,
         "sort_column": "popular",
         "sort_dir": "desc",
-        "query": skin_name  # pesquisa pelo nome da skin
+        "query": skin_name
     }
 
     for attempt in range(retries):
@@ -79,7 +79,7 @@ def update_one_skin(skin_name):
 
         skin = get_skin(skin_name)
 
-        
+
         
     except Exception as e:
         msg = f"[ERRO] Erro durante a execução: {e}"
