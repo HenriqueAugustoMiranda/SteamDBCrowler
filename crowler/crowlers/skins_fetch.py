@@ -9,10 +9,15 @@ YELLOW = "\033[33m"
 BLUE = "\033[34m"
 RESET = "\033[0m"
 
-HEADERS = {"User-Agent": "Mozilla/5.0"}
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...",
+    "Mozilla/5.0 (X11; Linux x86_64)..."
+]
 
-def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=100):
-    
+HEADERS = {"User-Agent": random.choice(USER_AGENTS)}
+
+def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=10):
     url = "https://steamcommunity.com/market/search/render/"
     params = {
         "appid": 730,
@@ -27,25 +32,28 @@ def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=100):
 
     for attempt in range(retries):
         try:
-            response = requests.get(url, headers=HEADERS, params=params, timeout=15)#,  proxies=get_proxy())
+            headers = {"User-Agent": random.choice(USER_AGENTS)}
+            response = requests.get(url, headers=headers, params=params, timeout=15)
             response.raise_for_status()
             data = response.json()
+            time.sleep(random.uniform(2, 5))  # espera entre requisições normais
             return data
         except requests.exceptions.HTTPError as e:
             if response.status_code == 429:
-                wait = (random.uniform(3, 6)) + 30 + attempt #* 10
+                wait = min(60, (2 ** attempt) + random.uniform(1, 5))
                 # vpn.run_ws_command(["status"])
                 # vpn.connect_to_random_location()
                 # vpn.run_ws_command(["status"])
-                print(f"{YELLOW}[WARN]{RESET} 429 Too Many Requests. Tentando de novo em {wait}s...")
+                print(f"{YELLOW}[WARN]{RESET} 429 Too Many Requests. Esperando {wait:.1f}s...")
+                vpn.connect_to_random_location()
                 time.sleep(wait)
             else:
-                print(f"{RED}[ERRO]{RESET} HTTP Error {response.status_code}: {e}")
-                return {"results": [], "total_count": 0}
+                print(f"{RED}[ERRO]{RESET} HTTP {response.status_code}: {e}")
         except Exception as e:
-            print(f"{RED}[ERRO]{RESET} Falha ao buscar starting em {start}: {e}")
-            return {"results": [], "total_count": 0}
-        
-    print(f"{RED}[ERRO]{RESET} Não conseguiu buscar starting em {start} depois de {retries} tentativas")
+            print(f"{YELLOW}[WARN]{RESET} Falha em start={start}: {e}, tentando novamente...")
+            time.sleep(random.uniform(1, 5))
+
+    print(f"{RED}[ERRO]{RESET} Não conseguiu buscar start={start} após {retries} tentativas")
     return {"results": [], "total_count": 0}
+
 
