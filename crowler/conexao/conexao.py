@@ -83,35 +83,37 @@ def update_DB(tag_weapon=[]):
         msg = f"{BLUE}[...]{RESET} Coletando skins da Steam..."
         print(msg); write_out(msg)
 
-        all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tag_weapon))
-        skins_adapted = cFunc.adapt_for_history(all_skins)
-        
-        if not all_skins:
-            msg = f"{BLUE}[ERRO]{RESET} Nenhuma skin foi coletada"
+        for tag in tag_weapon:
+
+            all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tag))
+            skins_adapted = cFunc.adapt_for_history(all_skins)
+            
+            if not all_skins:
+                msg = f"{BLUE}[ERRO]{RESET} Nenhuma skin foi coletada"
+                print(msg); write_out(msg)
+                exit()
+            
+            msg = "Atualizando no Supabase..."
             print(msg); write_out(msg)
-            exit()
-        
-        msg = "Atualizando no Supabase..."
-        print(msg); write_out(msg)
 
-        msg = "table steam:"
-        print(msg); write_out(msg)
-        for skin_line in all_skins:
-            inserted_count = cFunc.update_skins(skin_line, "steam_skins")
+            msg = "table steam:"
+            print(msg); write_out(msg)
+            for skin_line in all_skins:
+                inserted_count = cFunc.update_skins(skin_line, "steam_skins")
 
-        msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins inseridas com sucesso!"
-        print(msg); write_out(msg)
+            msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins inseridas com sucesso!"
+            print(msg); write_out(msg)
 
-        msg = "table history:"
-        print(msg); write_out(msg)
-        for skin_adapted_line in skins_adapted:
-            inserted_count = cFunc.insert_skins(skin_adapted_line, "price_history")
+            msg = "table history:"
+            print(msg); write_out(msg)
+            for skin_adapted_line in skins_adapted:
+                inserted_count = cFunc.insert_skins(skin_adapted_line, "price_history")
 
-        msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins atualizadas com sucesso!"
-        print(msg); write_out(msg)
-        
-        msg = f"\n{BLUE}[...]{RESET} Verificando dados atualizados..."
-        print(msg); write_out(msg)
+            msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins atualizadas com sucesso!"
+            print(msg); write_out(msg)
+            
+            msg = f"\n{BLUE}[...]{RESET} Verificando dados atualizados..."
+            print(msg); write_out(msg)
 
     except Exception as e:
         msg = f"{RED}[ERRO]{RESET} Erro durante a execução: {e}"
