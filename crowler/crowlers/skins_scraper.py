@@ -1,6 +1,4 @@
 from . import skins_fetch as sk
-import time
-import random
 from urllib.parse import quote, unquote
 
 RED = "\033[31m"

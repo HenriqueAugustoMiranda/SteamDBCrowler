@@ -8088,3 +8088,36 @@
 [OK] Tema inserido: Mercado e Preços para https://reddit.com/r/cs2/comments/1p6sqm2/does_it_matter_what_gun_you_use/
 [OK] Tema inserido: Gameplay para https://reddit.com/r/cs2/comments/1p6sqm2/does_it_matter_what_gun_you_use/
 [OK] Tema inserido: Other para https://reddit.com/r/cs2/comments/1p6rlvh/playing_this_game_is_so_fun_and_relaxing/
+[OK] News criada: пп
+[OK] News criada: SO MANY CHEATERS
+[OK] News criada: cs2
+[OK] News criada: How do I see "Score" during Premier games?
+[OK] News criada: почему проценты сбросились
+[OK] News criada: TRASH LOOT
+[OK] News criada: banvac
+[OK] News criada: Vac
+[OK] News criada: put language filter on forum
+[OK] News criada: Сувенирный Desert Eagle | Недовольство
+[OK] News criada: Is Valve going to add Anarchist agent skins in the future?
+[OK] News criada: на этих ♥♥♥♥♥♥♥♥♥ малолетних
+[OK] News criada: Trade
+[OK] News criada: Butterfly gamma doppler Phase 1 Trade
+[OK] News criada: SWW87-CTQC
+[OK] News criada: mouse problem when using handgun in premier
+[OK] News criada: Dream Nightmare case buy/sell quantity drastically lower
+[OK] News criada: Drop Semanal
+[OK] News criada: buged game
+[OK] News criada: Arm model without sloshing.
+[OK] News criada: EE
+[OK] News criada: Open Inventory [W] Classic Knife Vanilla/ Bloodhound Charred Gloves
+[OK] News criada: Anyone else reminded of non-gun sound effects when listening to the guns?
+[OK] News criada: обмен
+[OK] News criada: Constant loss on Brazil after update.
+[OK] News criada: Trading
+[OK] News criada: TRADE
+[31m[ERRO][0m Falha na execução: [WinError 10054] Foi forçado o cancelamento de uma conexão existente pelo host remoto
+[OK] News criada: Trading my skins
+[OK] News criada: CS2 Market Crash
+[OK] News criada: Focusrite and CS 2 mic NEVER FRIENDS
+[OK] News criada: Just starting out and dominating with the deagle
+[31m[ERRO][0m Falha na execução: [WinError 10054] Foi forçado o cancelamento de uma conexão existente pelo host remoto

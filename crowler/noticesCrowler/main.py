@@ -9,7 +9,7 @@ from . import classifier as c
 
 STEAM_BASE_URL = "https://steamcommunity.com/app/730/discussions/?fp="
 CSUPDATES_URL = "https://www.counter-strike.net/news/updates"
-REDDIT_SUBREDDITS = ["CS2AboutSkins", "cs2", "CS2Trading"]
+REDDIT_SUBREDDITS = ["CS2AboutSkins", "cs2"]#, "CS2Trading"]
 #SAIDA = "noticias_unificadas.txt"
 MAX_PAGES_STEAM = 100
 REDDIT_LIMIT = 25

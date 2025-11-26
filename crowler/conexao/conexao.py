@@ -76,16 +76,20 @@ def populate_DB():
 def update_DB(tag_weapon=[]):
     try:
 
-        news_data = asyncio.run(nC.main())
-        news, themes = cFunc.adapt_for_news(news_data)
-        cFunc.insert_news(news, themes)
+        # news_data = asyncio.run(nC.main())
+        # news, themes = cFunc.adapt_for_news(news_data)
+        # cFunc.insert_news(news, themes)
 
         msg = f"{BLUE}[...]{RESET} Coletando skins da Steam..."
         print(msg); write_out(msg)
 
+        tags = [1]
+
         for tag in tag_weapon:
 
-            all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tag))
+            tags[0] = tag
+
+            all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tags))
             skins_adapted = cFunc.adapt_for_history(all_skins)
             
             if not all_skins:
