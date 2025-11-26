@@ -11,4 +11,5 @@ __pycache__/
 *.pyd
 *.python-version
 
-saida*.py
+saida.txt
+saida_utils.txt
