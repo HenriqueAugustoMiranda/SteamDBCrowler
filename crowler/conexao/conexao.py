@@ -1,6 +1,6 @@
 from . import conexao_utils as cFunc
-from crowler.crowlers import skins_scraper as sksc
-from crowler.noticesCrowler import main as nC
+from crowlers import skins_scraper as sksc
+from noticesCrowler import main as nC
 import asyncio
 
 RED = "\033[31m"
@@ -90,7 +90,7 @@ def update_DB(tag_weapon=[]):
             tags[0] = tag
 
             all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tags))
-            skins_adapted = cFunc.adapt_for_history(all_skins)
+            skins_adapted, all_skins = cFunc.adapt_for_history(all_skins)
             
             if not all_skins:
                 msg = f"{BLUE}[ERRO]{RESET} Nenhuma skin foi coletada"

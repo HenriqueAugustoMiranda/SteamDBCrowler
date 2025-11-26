@@ -207,27 +207,31 @@ def update_skins(skins_data: List[Dict], table_name: str):
 # HISTORY ADAPTION
 # =============================
 def adapt_for_history(all_skins):
-
     all_skins_adapted = []
 
+    # Cria skins adaptadas com todos os campos
     for skin_line in all_skins:
-
         skins_adapted = []
 
         for item in skin_line:
-            
             skin = {
                 "name": item['name'],
                 "sell_listings": item['sell_listings'],
                 "sell_price": item['sell_price'],
-                "sale_price_text": item['sale_price_text']
+                "sale_price_text": item.get('sale_price_text')  # mantemos no adaptado
             }
-
             skins_adapted.append(skin)
 
         all_skins_adapted.append(skins_adapted)
-    
-    return all_skins_adapted
+
+    # Remove os atributos de preço do all_skins original
+    for skin_line in all_skins:
+        for item in skin_line:
+            for key in ['sell_price', 'sale_price_text', 'sell_listings']:
+                item.pop(key, None)  # remove se existir, sem quebrar
+
+    return all_skins_adapted, all_skins
+
 
 
 

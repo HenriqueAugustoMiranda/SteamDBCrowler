@@ -33,9 +33,9 @@ def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=100):
         except requests.exceptions.HTTPError as e:
             if response.status_code == 429:
                 wait = (random.uniform(3, 6)) + 30 + attempt #* 10
-                vpn.run_ws_command(["status"])
-                vpn.connect_to_random_location()
-                vpn.run_ws_command(["status"])
+                # vpn.run_ws_command(["status"])
+                # vpn.connect_to_random_location()
+                # vpn.run_ws_command(["status"])
                 print(f"{YELLOW}[WARN]{RESET} 429 Too Many Requests. Tentando de novo em {wait}s...")
                 time.sleep(wait)
             else:
