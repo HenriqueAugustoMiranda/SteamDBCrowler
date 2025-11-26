@@ -45,7 +45,7 @@ def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=10):
                 # vpn.connect_to_random_location()
                 # vpn.run_ws_command(["status"])
                 print(f"{YELLOW}[WARN]{RESET} 429 Too Many Requests. Esperando {wait:.1f}s...")
-                vpn.connect_to_random_location()
+                ##vpn.connect_to_random_location()
                 time.sleep(wait)
             else:
                 print(f"{RED}[ERRO]{RESET} HTTP {response.status_code}: {e}")
