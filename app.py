@@ -1,16 +1,33 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import requests
 from flask_cors import CORS
 from urllib.parse import quote, unquote
 import time
 import random
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
+# Rota principal para servir o index.html
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+# Rota para atualizar skin via POST
 @app.route("/update", methods=["POST"])
+def update():
+    data = request.get_json()
+    skin_name = data.get("skin_name")
+
+    if not skin_name:
+        return jsonify({"status": "error", "msg": "skin_name não enviado"}), 400
+
+    result = update_one_skin(skin_name)
+    return jsonify({"status": "ok", "result": result})
 
 
+# Funções do seu crowler
 def fetch_skin_by_name(skin_name, start=0, count=10, retries=100):
     url = "https://steamcommunity.com/market/search/render/"
     params = {
@@ -47,19 +64,15 @@ def fetch_skin_by_name(skin_name, start=0, count=10, retries=100):
 
 
 def get_skin(skin_name):
-
-    item = fetch_skin_by_name(skin_name)  
+    item = fetch_skin_by_name(skin_name)
 
     if not item:
         print(f"[WARN] Skin '{skin_name}' não encontrada.")
         return None
 
     skin_data = {
-        # Informações de Identificação
         "name": unquote(skin_name),
         "hash_name": skin_name,
-
-        # Informações de Mercado
         "sell_listings": item.get("sell_listings", 0),
         "sell_price": item.get("sell_price_text", ""),
         "sale_price_text": item.get("sale_price_text", ""),
@@ -78,23 +91,13 @@ def update_one_skin(skin_name):
         print(msg)
 
         skin = get_skin(skin_name)
-
-
-        
+        return skin  # retornando para o frontend
     except Exception as e:
         msg = f"[ERRO] Erro durante a execução: {e}"
         print(msg)
+        return None
 
-
-def update():
-    data = request.get_json()
-    skin_name = data.get("skin_name")
-
-    if not skin_name:
-        return jsonify({"status": "error", "msg": "skin_name não enviado"}), 400
-
-    result = update_one_skin(skin_name)
-    return jsonify({"status": "ok", "result": result})
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
