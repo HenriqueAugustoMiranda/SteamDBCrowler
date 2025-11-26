@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <button id="save-btn" class="save-btn"><img src="../asstes/diskette.png" style="width:13px; height:13px;"></button>
     `;
       div.querySelector('.visualizar-btn').onclick = () => {
-        window.location.href = `/templates/detalhe.html?nome=${encodeURIComponent(skin.nome)}`;
+          window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
       };
 
       div.querySelector('.save-btn').onclick = async () => {
