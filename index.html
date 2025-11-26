@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SkinsViewer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="asstes/icon.png">
+</head>
+
+<body>
+
+  <button id="btn-login" class="voltar-btn" style="margin-top: 20px; margin-left: 20px;">Fazer login</button>
+  <button id="btn-cadastro" class="voltar-btn" style="margin-top: 20px; margin-left: 10px;">Cadastrar-se</button>
+
+  <div class="overlay" id="loginOverlay">
+    <div class="modal">
+      <h2>Login</h2>
+      <input id="input-email" type="text" placeholder="Email">
+      <input id="input-senha" type="password" placeholder="Senha">
+      <br>
+      <button id="btn-entrar" class="voltar-btn">Entrar</button>
+      <br><br>
+      <button id="btn-fechar-login" class="voltar-btn">Fechar</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="cadastroOverlay">
+    <div class="modal">
+      <h2>Cadastro</h2>
+      <div style="display: flex; gap: 10px;">
+        <input id="p-nome" type="text" placeholder="Nome" style="flex:1;">
+        <input id="u-nome" type="text" placeholder="Sobrenome" style="flex:1;">
+      </div>
+      <input id="input-email-cadastro" type="text" placeholder="Email">
+      <input id="input-senha-cadastro" type="password" placeholder="Senha">
+      <br>
+      <button id="btn-cadastrar" class="voltar-btn">Cadastrar</button>
+      <br><br>
+      <button id="btn-fechar-cadastro" class="voltar-btn">Fechar</button>
+    </div>
+  </div>
+
+
+  <h1><img src="asstes/skinsviewer.png" class="header-img"></h1>
+
+  <div class="filtros">
+    <div class="input-container">
+      <input type="text" id="filtro-busca" placeholder="Buscar skin...">
+      <img src="images/search.png" id="icone-busca" alt="ícone de busca">
+    </div>
+
+    <button id="save-filter" style="background: transparent; border: none;">
+      <img src="asstes/diskette.png" style="width:40px; height:40px;">
+    </button>
+
+    <select id="filtro-arma">
+      <option value="">Todas armas</option>
+      <option value="ak47">AK-47</option>
+      <option value="usp_silencer">USP-S</option>
+      <option value="awp">AWP</option>
+      <option value="glock">Glock</option>
+      <option value="m4a1_silencer">M4A1-S</option>
+      <option value="m4a1">M4A4</option>
+      <option value="bayonet">Baioneta</option>
+    </select>
+    <select id="filtro-qualidade">
+      <option value="">Todas qualidades</option>
+      <option value="Mil-spec">Mil-spec</option>
+      <option value="Restricted">Restricted</option>
+      <option value="Classified">Classified</option>
+      <option value="Covert">Covert</option>
+    </select>
+    <select id="filtro-stattrak">
+      <option value="">Todos</option>
+      <option value="true">StatTrak</option>
+      <option value="false">Não StatTrak</option>
+    </select>
+    <select id="filtro-ordenar">
+      <option value="">Ordenar</option>
+      <option value="preco-crescente">Preço: menor → maior</option>
+      <option value="preco-decrescente">Preço: maior → menor</option>
+    </select>
+
+    <select id="filtro-skins-por-pagina">
+      <option value="10">10 skins por página</option>
+      <option value="30" selected>30 skins por página</option>
+      <option value="50">50 skins por página</option>
+      <option value="100">100 skins por página</option>
+    </select>
+  </div>
+
+  <div class="conteudo">
+    <div class="container-principal">
+      <div class="itens" id="container-skins">
+      </div>
+
+      <div id="paginacao">
+        <button id="anterior">&lt;</button>
+        <button class="numero-pagina active">1</button>
+        <button class="numero-pagina">2</button>
+        <span class="ellipsis">...</span>
+        <button class="numero-pagina">10</button>
+        <button class="numero-pagina">11</button>
+        <button id="proximo">&gt;</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="js/index.js" type="module"></script>
+
+</body>
+
+</html>
