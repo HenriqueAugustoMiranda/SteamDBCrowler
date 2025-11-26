@@ -1,5 +1,5 @@
 # Ignorar o crowler inteiro
-crowler/
+crowler/**
 
 # Ignorar arquivos de ambiente
 .env
