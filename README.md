@@ -1,8 +1,6 @@
 # SteamDBCrowler
 SteamDBCrowler
 
-https://github.com/HenriqueAugustoMiranda/SteamDBCrowler/issues/3
-
 Guia Rápido de Git e Controle de Branches
 
     Configuração Inicial
@@ -60,3 +58,6 @@ Guia Rápido de Git e Controle de Branches
 
         git reset –soft HEAD~1 git reset –hard HEAD~1 git checkout – arquivo git
         stash git stash pop
+
+    Tarefas:
+        https://github.com/HenriqueAugustoMiranda/SteamDBCrowler/issues/3
