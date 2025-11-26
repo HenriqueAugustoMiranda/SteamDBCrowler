@@ -1,0 +1,12 @@
+# Ignorar variáveis de ambiente
+.env
+
+# Ignorar todos os arquivos .pyc em qualquer pasta
+*.pyc
+__pycache__/
+
+# (opcional) ignorar caches do Python em geral
+*.pyo
+*.pyd
+*.pyd
+*.python-version
