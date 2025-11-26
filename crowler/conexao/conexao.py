@@ -1,6 +1,6 @@
 from . import conexao_utils as cFunc
-import crowlers.skins_scraper as sksc
-import noticesCrowler.main as nC
+from crowler.crowlers import skins_scraper as sksc
+from crowler.noticesCrowler import main as nC
 import asyncio
 
 RED = "\033[31m"
