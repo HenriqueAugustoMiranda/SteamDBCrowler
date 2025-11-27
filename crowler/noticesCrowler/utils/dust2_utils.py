@@ -40,6 +40,7 @@ def get_DUST2_links():
 
     return all_links
 
+
 def get_DUST2_news(retries=5, timeout=15):
     
     links = get_DUST2_links()
@@ -64,3 +65,4 @@ def fetch_DUST2_news(link, retries=5, timeout=15):
                 response.raise_for_status()
 
             except Exception as e:
+                ...

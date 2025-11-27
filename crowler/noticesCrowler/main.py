@@ -1,8 +1,8 @@
 import aiohttp
 import asyncio
-from crowler.noticesCrowler.utils import dust2_utils as d2
-from crowler.noticesCrowler.utils import redit_utils as rdt
-from crowler.noticesCrowler.utils import steam_utils as stm
+from noticesCrowler.utils import dust2_utils as d2
+from noticesCrowler.utils import redit_utils as rdt
+from noticesCrowler.utils import steam_utils as stm
 
 
 REDDIT_SUBREDDITS = ["CS2AboutSkins", "cs2", "Jarnefeld"]
