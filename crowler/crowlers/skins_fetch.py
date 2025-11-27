@@ -15,7 +15,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64)..."
 ]
 
-HEADERS = {"User-Agent": random.choice(USER_AGENTS)}
 
 def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=10):
     url = "https://steamcommunity.com/market/search/render/"

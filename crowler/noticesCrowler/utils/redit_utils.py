@@ -1,7 +1,4 @@
-import aiohttp
 import asyncio
-from bs4 import BeautifulSoup
-import html
 import requests
 import time
 from noticesCrowler.classifier import classifier as c
@@ -12,6 +9,7 @@ SEM = asyncio.Semaphore(5)
 
 
 def fetch_reddit_posts(subreddit, limit=25):
+    
     base_url = f"https://www.reddit.com/r/{subreddit}/.json"
     after = None
     resultados = []
