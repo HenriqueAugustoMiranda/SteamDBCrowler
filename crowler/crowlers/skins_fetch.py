@@ -80,7 +80,7 @@ def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=10):
             "search_descriptions": 0,
             "sort_column": "popular",
             "sort_dir": "desc",
-            "category_730_Type%5B%5D": tag_weapon
+            "category_730_Type[]": tag_weapon
         }
 
     for attempt in range(retries):

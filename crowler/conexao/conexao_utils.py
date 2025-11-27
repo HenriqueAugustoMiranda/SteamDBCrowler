@@ -251,6 +251,7 @@ def adapt_for_news(news):
             "link" : line["link"],
             "titulo" : line["titulo"],
             "autor" : line["autor"],
+            "date" : line["date"],
             "respostas" : line["respostas"],
             "descricao" : line["descricao"],
             "fonte" : line["fonte"]

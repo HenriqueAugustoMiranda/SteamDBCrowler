@@ -12,6 +12,7 @@ REDDIT_LIMIT = 25
 
 async def main():
     # --- Steam ---
+    print(f"Baixando posts da Steam...")
     timeout = aiohttp.ClientTimeout(total=30)  # evita expirar rápido
     async with aiohttp.ClientSession(timeout=timeout) as session:
         tasks = [stm.fetch_steam_page(session, page) for page in range(1, MAX_PAGES_STEAM + 1)]
@@ -29,6 +30,10 @@ async def main():
         print(f"Baixando posts do r/{subreddit}...")
         reddit_posts = rdt.fetch_reddit_posts(subreddit, REDDIT_LIMIT)
         all_posts.extend(reddit_posts)
+
+    print(f"Baixando posts da DDUST2...")
+    d2_news = d2.get_DUST2_news()
+    all_posts.extend(d2_news)
 
     return all_posts
     

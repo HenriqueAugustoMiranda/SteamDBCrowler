@@ -1,8 +1,8 @@
 import asyncio
 import requests
 import time
+from datetime import datetime
 from noticesCrowler.classifier import classifier as c
-
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 SEM = asyncio.Semaphore(5)
@@ -31,10 +31,15 @@ def fetch_reddit_posts(subreddit, limit=25):
 
         for post in posts:
             p_data = post["data"]
+
             title = p_data.get("title", "Sem título")
             author = p_data.get("author", "Desconhecido")
             link = "https://reddit.com" + p_data.get("permalink", "")
             selftext = p_data.get("selftext", "")
+
+            ts = p_data.get("created_utc")
+            data_post = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S") if ts else None
+
             temas = c.classify_text(title, selftext)
 
             resultados.append({
@@ -42,6 +47,7 @@ def fetch_reddit_posts(subreddit, limit=25):
                 "titulo": title,
                 "link": link,
                 "autor": author,
+                "date": data_post,
                 "respostas": p_data.get("num_comments", 0),
                 "descricao": selftext,
                 "fonte": f"Reddit r/{subreddit}"
