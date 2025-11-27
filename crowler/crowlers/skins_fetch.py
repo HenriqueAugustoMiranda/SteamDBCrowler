@@ -17,17 +17,31 @@ USER_AGENTS = [
 
 
 def fetch_skins(start=0, count=10, tag_weapon="tag_weapon_ak47", retries=10):
+
     url = "https://steamcommunity.com/market/search/render/"
-    params = {
-        "appid": 730,
-        "norender": 1,
-        "count": count,
-        "start": start,
-        "search_descriptions": 0,
-        "sort_column": "popular",
-        "sort_dir": "desc",
-        "category_730_Weapon[]": tag_weapon
-    }
+
+    if tag_weapon.startswith("tag_weapon_"):
+        params = {
+            "appid": 730,
+            "norender": 1,
+            "count": count,
+            "start": start,
+            "search_descriptions": 0,
+            "sort_column": "popular",
+            "sort_dir": "desc",
+            "category_730_Weapon[]": tag_weapon
+        }
+    else:
+        params = {
+            "appid": 730,
+            "norender": 1,
+            "count": count,
+            "start": start,
+            "search_descriptions": 0,
+            "sort_column": "popular",
+            "sort_dir": "desc",
+            "category_730_type[]": tag_weapon
+        }
 
     for attempt in range(retries):
         try:
