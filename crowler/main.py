@@ -32,8 +32,6 @@ if __name__ == "__main__":
                                             "tag_CSGO_Tool_GiftTag",
                                             "tag_CSGO_Tool_Name_TagTag",
                                             "tag_CSGO_Type_Tool",
-                                            "tag_weapon_revolver",
-                                            "tag_weapon_tec9",
                                             "tag_weapon_famas",
                                             "tag_weapon_galilar",
                                             "tag_weapon_sg556",
