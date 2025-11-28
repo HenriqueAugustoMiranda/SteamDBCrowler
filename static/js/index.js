@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let skins = [];
   let is_logged = 0;
   let userMail = null;
-  // NOVO: Variável de estado para o filtro de skins salvas
   let filtroSkinsSalvasAtivo = false;
 
   const SUPABASE_URL = "https://lpfawvedzxmjoaznbnkb.supabase.co";
@@ -214,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
   
-  // NOVO: Função para buscar as skins salvas pelo usuário
+  // funcao para buscar as skins salvas pelo usuário
   async function carregarSkinsDeInteresse(email) {
       const { data, error } = await client
         .from("interest")
@@ -226,7 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return [];
       }
 
-      // Retorna apenas o nome das skins em um array
       return data.map(item => item.skin);
   }
 
@@ -267,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number(precoStr.replace(/[^0-9.]/g, ""));
   }
 
-  // MODIFICADO: Tornada assíncrona para buscar skins salvas
+  // buscar skins salvas
   async function filtrarESortearSkins() {
 
     const busca = document.getElementById("filtro-busca").value.toLowerCase(); // Adicionado toLowerCase()
@@ -278,14 +276,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let skinsParaFiltrar = skins; // Começa com todas as skins
 
-    // NOVO: Lógica para o filtro de skins salvas
+    // logica do filtro de skins salvas
     if (filtroSkinsSalvasAtivo && is_logged === 1) {
         const skinsDeInteresse = await carregarSkinsDeInteresse(userMail);
-        // Filtra o array principal para incluir SOMENTE as skins salvas
+        // filtra o array principal para incluir so as skins salvas
         skinsParaFiltrar = skinsParaFiltrar.filter(skin => skinsDeInteresse.includes(skin.nome));
     }
     
-    // Aplica os filtros de busca, arma, qualidade e stattrak no array filtrado
+    // aplica os outros filtros no array filtrado
     return skinsParaFiltrar
       .filter(skin => {
         const stattrakBool = skin.stattrak === true || skin.stattrak === "true";
@@ -303,14 +301,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // MODIFICADO: Tornada assíncrona
   async function renderizarSkins(pagina = 1) {
     const container = document.getElementById("container-skins");
     container.innerHTML = "";
 
-    const filtradas = await filtrarESortearSkins(); // AGUARDA a função de filtro
+    const filtradas = await filtrarESortearSkins(); // aguarda a funcao de filtro
     const totalPaginas = Math.ceil(filtradas.length / skinsPorPagina);
-    paginaAtual = Math.min(Math.max(1, pagina), totalPaginas || 1); // Garante que a página mínima é 1
+    paginaAtual = Math.min(Math.max(1, pagina), totalPaginas || 1); // garante que a pagina minima eh 1
 
     const inicio = (paginaAtual - 1) * skinsPorPagina;
     const fim = inicio + skinsPorPagina;
@@ -345,7 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderizarPaginacao(totalPaginas);
   }
   
-  // NOVO: Event listener para o botão de "Salvar Filtro"
   saveFilter.addEventListener("click", async () => {
     if (is_logged === 0) {
       alert("Você precisa estar logado para ver suas skins salvas!");
@@ -353,23 +349,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Alterna o estado do filtro
+    // alterna o estado do filtro
     filtroSkinsSalvasAtivo = !filtroSkinsSalvasAtivo;
 
-    // Atualiza o feedback visual do botão
+    // atualiza o feedback visual do botao
     if (filtroSkinsSalvasAtivo) {
-      // Aplica estilo para mostrar que está ativo (usando cores do style.css)
+      // muda estilo para mostrar que esta ativo
       saveFilter.style.backgroundColor = 'var(--vermelho)';
       saveFilter.style.border = '2px solid var(--branco)';
       saveFilter.style.borderRadius = '8px';
     } else {
-      // Remove estilo para mostrar que está inativo
+      // remove estilo
       saveFilter.style.backgroundColor = 'transparent';
       saveFilter.style.border = 'none';
       saveFilter.style.borderRadius = '0';
     }
 
-    // Re-renderiza as skins, voltando para a primeira página
     renderizarSkins(1);
   });
 
