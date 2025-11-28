@@ -22,8 +22,6 @@ def update_DB(tag_weapon=[]):
 
     try:
 
-        cFunc.inserir_precos()
-
         type = 3
 
         while type <= 3:
@@ -61,6 +59,8 @@ def update_DB(tag_weapon=[]):
 
             msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins inseridas com sucesso!"
             print(msg); write_out(msg)
+
+        cFunc.inserir_precos()
 
     except Exception as e:
         msg = f"{RED}[ERRO]{RESET} Erro durante a execução: {e}"
