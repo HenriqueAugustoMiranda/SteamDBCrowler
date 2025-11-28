@@ -18,8 +18,8 @@ if __name__ == "__main__":
             print("BURRO! BURRO! BURRO!")
         elif x == 2:
 
-            connect.update_DB(tag_weapon=[  "tag_CSGO_Type_WeaponCase",
-                                            "tag_CSGO_Tool_Sticker",
+            connect.update_DB(tag_weapon=[  #"tag_CSGO_Type_WeaponCase",
+                                            #"tag_CSGO_Tool_Sticker",
                                             "tag_Type_Hands",
                                             "tag_CSGO_Tool_Keychain",
                                             "tag_Type_CustomPlayer",
