@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnome = document.getElementById("p-nome");
   const unome = document.getElementById("u-nome");
 
+  //#reseba
   if (btnAbrirLogin && loginOverlay) {
     btnAbrirLogin.addEventListener("click", () => {
       loginOverlay.style.display = "flex";
