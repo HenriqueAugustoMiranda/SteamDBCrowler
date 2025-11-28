@@ -71,7 +71,7 @@ def normalizar_data_dust2(texto_data: str) -> str:
 def get_DUST2_links():
 
     all_links = []
-    offset = 0
+    offset = 5310
     step = 30
 
     while True:
