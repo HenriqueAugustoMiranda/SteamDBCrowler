@@ -18,19 +18,19 @@ def write_out(msg: str):
     except:
         pass
 
+async def processar():
+    type = 3
+    while type <= 3:
+        news_data = await nC.main(type)
+        news, themes = cFunc.adapt_for_news(news_data)
+        cFunc.insert_news(news, themes)
+        type += 1
+
 def update_DB(tag_weapon=[]):
 
     try:
 
-        type = 3
-
-        while type <= 3:
-
-            news_data = asyncio.run(nC.main(type))
-            news, themes = cFunc.adapt_for_news(news_data)
-            cFunc.insert_news(news, themes)
-
-            type+=1
+        asyncio.run(processar())
 
         msg = f"{BLUE}[...]{RESET} Coletando skins da Steam..."
         print(msg); write_out(msg)
