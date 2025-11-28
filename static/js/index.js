@@ -376,13 +376,78 @@ document.addEventListener("DOMContentLoaded", () => {
     const pagContainer = document.getElementById("paginacao");
     pagContainer.innerHTML = "";
 
-    for (let i = 1; i <= totalPaginas; i++) {
-      const btn = document.createElement("button");
-      btn.innerText = i;
-      btn.onclick = () => renderizarSkins(i);
-      if (i === paginaAtual) btn.style.fontWeight = "bold";
-      pagContainer.appendChild(btn);
+    const maxBotoes = 7;
+    let startPage;
+    let endPage;
+
+    if (totalPaginas <= maxBotoes) {
+        // exibe todos os botoes se o total for menor ou igual ao limite
+        startPage = 1;
+        endPage = totalPaginas;
+    } else {
+        const maxPaginasEsquerda = Math.floor(maxBotoes / 2);
+        const maxPaginasDireita = Math.ceil(maxBotoes / 2) - 1;
+
+        if (paginaAtual <= maxPaginasEsquerda) {
+            // se estiver perto do inicio, fixa o inicio em 1
+            startPage = 1;
+            endPage = maxBotoes;
+        } else if (paginaAtual + maxPaginasDireita >= totalPaginas) {
+            // se estiver perto do fim, fixa o fim no totalPaginas
+            startPage = totalPaginas - maxBotoes + 1;
+            endPage = totalPaginas;
+        } else {
+            // senao, centraliza a pagina atual
+            startPage = paginaAtual - maxPaginasEsquerda + 1;
+            endPage = paginaAtual + maxPaginasDireita;
+        }
     }
+
+    const btnPrimeira = document.createElement("button");
+    btnPrimeira.innerText = "« First";
+    btnPrimeira.title = "Primeira Página";
+    btnPrimeira.disabled = paginaAtual === 1;
+    btnPrimeira.onclick = () => renderizarSkins(1); // vai para a primeira pagina
+    pagContainer.appendChild(btnPrimeira);
+
+    const btnAnterior = document.createElement("button"); // botao anterior
+    btnAnterior.innerText = "«";
+    btnAnterior.disabled = paginaAtual === 1; // desativa se estiver na primeira pagina
+    btnAnterior.onclick = () => {
+        if (paginaAtual > 1) {
+            renderizarSkins(paginaAtual - 1);
+        }
+    };
+    pagContainer.appendChild(btnAnterior);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.className = "numero-pagina";
+        btn.onclick = () => renderizarSkins(i);
+        
+        if (i === paginaAtual) {
+            btn.classList.add("active");
+        }
+        pagContainer.appendChild(btn);
+    }
+
+    const btnProximo = document.createElement("button"); // botao proximo
+    btnProximo.innerText = "»";
+    btnProximo.disabled = paginaAtual === totalPaginas || totalPaginas === 0; // desativa se estiver na ultima página
+    btnProximo.onclick = () => {
+        if (paginaAtual < totalPaginas) {
+            renderizarSkins(paginaAtual + 1);
+        }
+      };
+      pagContainer.appendChild(btnProximo);
+
+    const btnUltima = document.createElement("button");
+    btnUltima.innerText = "Last »";
+    btnUltima.title = "Última Página";
+    btnUltima.disabled = paginaAtual === totalPaginas || totalPaginas === 0;
+    btnUltima.onclick = () => renderizarSkins(totalPaginas); // vai para a ultima pagina
+    pagContainer.appendChild(btnUltima);
   }
 
   async function iniciar() {
