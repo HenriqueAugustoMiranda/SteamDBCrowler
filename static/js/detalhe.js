@@ -120,13 +120,56 @@ async function renderizarDetalhe() {
           borderColor: '#28a745',
           backgroundColor: 'rgba(40,167,69,0.1)',
           fill: true,
-          tension: 0.2
+          tension: 0.3,
+
+          // ---- CONFIG NOVA ----
+          pointRadius: 0,         // tira as bolinhas
+          pointHoverRadius: 6,    // só aparece no hover
+          pointHoverBorderWidth: 2
         }]
       },
       options: {
         scales: {
-          x: { title: { display: true, text: 'Data' } },
-          y: { title: { display: true, text: 'Preço (US$)' } }
+          x: {
+            title: { display: true, text: 'Data' },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 10,  // menos datas
+              maxRotation: 0,
+              minRotation: 0
+            }
+          },
+          y: {
+            title: { display: true, text: 'Preço (US$)' }
+          }
+        },
+
+        plugins: {
+          tooltip: {
+            intersect: false,
+            mode: 'index',
+            callbacks: {
+              title: (items) => {
+                const dataObj = historico[items[0].dataIndex].data;
+                return dataObj.toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric"
+                });
+              },
+              label: (item) => `Preço: US$ ${item.raw.toFixed(2)}`
+            }
+          },
+          legend: {
+            labels: {
+              boxWidth: 0 
+            }
+          }
+        },
+
+        interaction: {
+          intersect: false,
+          mode: 'index'
         }
       }
     });
