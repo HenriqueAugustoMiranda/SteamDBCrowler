@@ -51,11 +51,9 @@ async function buscarSkin(nome) {
 }
 
 async function buscarHistorico(nome) {
-  console.log("[DEBUG] Buscando histórico para:", nome);
-
   const { data, error } = await client
     .from("price_history")
-    .select("sell_price, date")
+    .select("sell_price, date, sell_listings")
     .eq("name", nome)
     .order("date", { ascending: true });
 
@@ -64,22 +62,13 @@ async function buscarHistorico(nome) {
     return [];
   }
 
-  console.log("[DEBUG] Dados crus do histórico:", data);
-
   return data
     .map(h => {
-      const raw = h.sell_price;
-
-      const preco = typeof raw === "string"
-        ? Number(raw.replace(",", "."))
-        : Number(raw);
-
+      const preco = Number(h.sell_price.toString().replace(",", "."));
+      const volume = Number(h.sell_listings);
       const dataObj = h.date ? new Date(h.date) : null;
 
-      return {
-        preco,
-        data: dataObj
-      };
+      return { preco, volume, data: dataObj };
     })
     .filter(h => !isNaN(h.preco) && h.data !== null);
 }
@@ -88,9 +77,6 @@ async function renderizarDetalhe() {
   const nome = getSkinNome();
   const skin = await buscarSkin(nome);
   const historico = await buscarHistorico(nome);
-
-  console.log("[DEBUG] Skin carregada:", skin);
-  console.log("[DEBUG] Histórico filtrado:", historico);
 
   if (!skin) {
     document.querySelector('.container').innerHTML = "<h2>Skin não encontrada!</h2>";
@@ -110,66 +96,94 @@ async function renderizarDetalhe() {
   if (historico.length > 0) {
     const ctx = document.getElementById('grafico').getContext('2d');
 
+    // ---- GRADIENT DINÂMICO (verde quando sobe / vermelho quando cai) ----
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, "rgba(0, 200, 0, 0.8)");
+    gradient.addColorStop(1, "rgba(200, 0, 0, 0.8)");
+
     new Chart(ctx, {
       type: 'line',
       data: {
         labels: historico.map(h => h.data.toISOString().split('T')[0]),
-        datasets: [{
-          label: 'Preço (US$)',
-          data: historico.map(h => h.preco),
-          borderColor: '#28a745',
-          backgroundColor: 'rgba(40,167,69,0.1)',
-          fill: true,
-          tension: 0.3,
-
-          // ---- CONFIG NOVA ----
-          pointRadius: 0,         // tira as bolinhas
-          pointHoverRadius: 6,    // só aparece no hover
-          pointHoverBorderWidth: 2
-        }]
+        datasets: [
+          {
+            label: 'Preço (US$)',
+            data: historico.map(h => h.preco),
+            borderColor: gradient,
+            backgroundColor: 'rgba(40,167,69,0.05)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Volume',
+            data: historico.map(h => h.volume),
+            borderColor: "#007bff",
+            backgroundColor: "rgba(0,123,255,0.15)",
+            fill: true,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            yAxisID: 'y1'
+          }
+        ]
       },
       options: {
-        scales: {
-          x: {
-            title: { display: true, text: 'Data' },
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 10,  // menos datas
-              maxRotation: 0,
-              minRotation: 0
-            }
-          },
-          y: {
-            title: { display: true, text: 'Preço (US$)' }
-          }
-        },
-
-        plugins: {
-          tooltip: {
-            intersect: false,
-            mode: 'index',
-            callbacks: {
-              title: (items) => {
-                const dataObj = historico[items[0].dataIndex].data;
-                return dataObj.toLocaleDateString("pt-BR", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric"
-                });
-              },
-              label: (item) => `Preço: US$ ${item.raw.toFixed(2)}`
-            }
-          },
-          legend: {
-            labels: {
-              boxWidth: 0 
-            }
-          }
-        },
-
+        responsive: true,
         interaction: {
           intersect: false,
           mode: 'index'
+        },
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 10
+            }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { text: 'Preço (US$)', display: true }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { text: 'Volume', display: true },
+            grid: { drawOnChartArea: false }
+          }
+        },
+        plugins: {
+          legend: { labels: { boxWidth: 12 } },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              title: (items) => {
+                const d = historico[items[0].dataIndex].data;
+                return d.toLocaleDateString("pt-BR");
+              },
+              label: (item) => {
+                if (item.datasetIndex === 0)
+                  return `Preço: US$ ${item.raw.toFixed(2)}`;
+                else
+                  return `Volume: ${item.raw}`;
+              }
+            }
+          },
+          zoom: {
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              mode: 'x'
+            },
+            pan: {
+              enabled: true,
+              mode: 'x'
+            }
+          }
         }
       }
     });
