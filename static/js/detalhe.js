@@ -13,7 +13,7 @@ document.getElementById("skin-nome").innerText = nomeSkin;
 async function buscarHistorico() {
   try {
     const { data, error } = await supabase
-      .from("history_skins")
+      .from("price_history")
       .select("*")
       .eq("skin_name", nomeSkin)
       .order("date", { ascending: true });
