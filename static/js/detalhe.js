@@ -15,7 +15,7 @@ async function buscarHistorico() {
     const { data, error } = await supabase
       .from("price_history")
       .select("*")
-      .eq("skin_name", nomeSkin)
+      .eq("name", nomeSkin)
       .order("date", { ascending: true });
 
     if (error) {
