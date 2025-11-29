@@ -5,29 +5,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const btnAtualizar = document.getElementById("attbutton");
-
-btnAtualizar.addEventListener("click", async () => {
-  const skinName = getSkinNome();
-  atualizarSkin(skinName);
-});
-
-async function atualizarSkin(skinName) {
-  const response = await fetch("http://localhost:5000/update", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ skin_name: skinName })
-  });
-
-  const data = await response.json();
-  console.log(data);
-}
-
-function getSkinNome() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("nome");
-}
-
 async function buscarSkin(nome) {
   const { data, error } = await client
     .from("steam_skins")
@@ -54,7 +31,7 @@ async function buscarSkin(nome) {
 async function buscarHistorico(nome) {
   const { data, error } = await client
     .from("price_history")
-    .select("sell_price, sell_listings, recorded_at")
+    .select("sell_price, recorded_at")
     .eq("name", nome)
     .order("recorded_at", { ascending: true });
 
@@ -66,11 +43,15 @@ async function buscarHistorico(nome) {
   return data
     .map(h => {
       const preco = Number(h.sell_price.replace("$", ""));
-      const volume = h.sell_listings;
-      const dataObj = h.recorded_at ? new Date(h.recorded_at) : null;
-      return { preco, volume, data: dataObj };
+      const dataObj = new Date(h.recorded_at);
+      return { preco, data: dataObj };
     })
-    .filter(h => !isNaN(h.preco) && h.data !== null);
+    .filter(h => !isNaN(h.preco) && !isNaN(h.data));
+}
+
+function getSkinNome() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("nome");
 }
 
 async function renderizarDetalhe() {
@@ -88,8 +69,6 @@ async function renderizarDetalhe() {
   document.getElementById("skin-img").src = skin.img.startsWith("http")
     ? skin.img
     : link_inicio + skin.img;
-  document.getElementById("skin-img").alt = skin.nome;
-
   document.getElementById("skin-info").innerHTML = `
     <strong>Arma:</strong> ${skin.arma}<br>
     <strong>Preço atual:</strong> ${skin.preco}<br>
@@ -100,7 +79,7 @@ async function renderizarDetalhe() {
     const canvas = document.getElementById("grafico");
     const ctx = canvas.getContext("2d");
 
-    // Gradient dinâmico
+    // gradient bonito
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "rgba(40,167,69,0.4)");
     gradient.addColorStop(1, "rgba(40,167,69,0)");
@@ -116,20 +95,10 @@ async function renderizarDetalhe() {
             borderColor: "#28a745",
             backgroundColor: gradient,
             fill: true,
+            borderWidth: 1,
             tension: 0.2,
-            borderWidth: 1,
             pointRadius: 0,
-            pointHoverRadius: 0
-          },
-          {
-            label: "Volume",
-            data: historico.map(h => h.volume),
-            borderColor: "#007bff",
-            backgroundColor: "rgba(0, 123, 255, 0.1)",
-            yAxisID: "y2",
-            borderWidth: 1,
-            pointRadius: 0,
-            pointHoverRadius: 0
+            pointHoverRadius: 4
           }
         ]
       },
@@ -142,30 +111,29 @@ async function renderizarDetalhe() {
           x: {
             type: "time",
             time: { unit: "year" },
-            title: { display: true, text: "Ano" },
             ticks: {
-              callback: (value, index) => {
-                const date = historico[index].data;
-                return date.getFullYear();
+              callback: (_, index) => {
+                const d = historico[index].data;
+                return d.getFullYear(); // só ano
               }
             }
           },
           y: {
             title: { display: true, text: "Preço (US$)" }
-          },
-          y2: {
-            title: { display: true, text: "Volume" },
-            position: "right",
-            grid: { drawOnChartArea: false }
           }
         },
 
         plugins: {
           tooltip: {
-            mode: "index",
-            intersect: false
+            mode: "nearest",
+            intersect: false,
+            callbacks: {
+              title: (items) => {
+                const d = items[0].parsed.x;
+                return new Date(d).toLocaleDateString("pt-BR");
+              }
+            }
           },
-          legend: { display: true },
 
           zoom: {
             zoom: {
