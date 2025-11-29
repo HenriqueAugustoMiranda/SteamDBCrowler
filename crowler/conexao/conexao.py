@@ -12,6 +12,7 @@ RESET = "\033[0m"
 SAIDA = r"saida.txt"
 
 def write_out(msg: str):
+    
     try:
         with open(SAIDA, "a", encoding="utf-8") as f:
             f.write(msg + "\n")
@@ -19,7 +20,9 @@ def write_out(msg: str):
         pass
 
 async def processar():
-    type = 3
+
+    type = 1
+
     while type <= 3:
         news_data = await nC.main(type)
         news, themes = cFunc.adapt_for_news(news_data)
