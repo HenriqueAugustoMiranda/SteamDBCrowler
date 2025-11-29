@@ -14,7 +14,9 @@ REQUEST_MAX_DELAY = 2.2
 BATCH_DELAY = (4, 9)
 SAFE_MODE_DELAY = (15, 30)
 
-MAX_RETRIES = 10
+MAX_RETRIES = 7
+
+GIVE_UPS_SKINS = "giveup.txt"
 
 CACHE_EXPIRATION_MINUTES = 30  # 0 = sem cache
 _page_cache = {}  # interno
@@ -106,6 +108,9 @@ def baixar_html_com_resiliencia(url):
             print(f"[WARN] Falha: {e} — aguardando {wait:.1f}s...")
             time.sleep(wait)
 
+    with open(GIVE_UPS_SKINS, "a", encoding="utf-8") as f:
+        f.write(url + "\n")
+
     raise Exception("[FATAL] Falhou após todas as tentativas.")
 
 
@@ -131,6 +136,8 @@ def processar_dados(name, data):
 
 
 def graph_skins(hash_name, name, index=None, total=None):
+
+    open(GIVE_UPS_SKINS, "w", encoding="utf-8")
 
     if index is not None and total is not None:
         print(f"[INFO] [{index}/{total}] Baixando: {name}")
