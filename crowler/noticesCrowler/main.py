@@ -34,7 +34,7 @@ async def main(type):
             all_posts.extend(reddit_posts)
 
         print(f"Baixando posts da DUST2...")
-        d2_news = d2.get_DUST2_news()
+        d2_news = await d2.get_DUST2_news()
         all_posts.extend(d2_news)
 
     if type == 1:
@@ -66,7 +66,7 @@ async def main(type):
         all_posts = []
 
         print(f"Baixando posts da DUST2...")
-        d2_news = d2.get_DUST2_news()
+        d2_news = await d2.get_DUST2_news()
         all_posts.extend(d2_news)
 
 

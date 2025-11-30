@@ -38,11 +38,6 @@ def get_all_skins(tag_weapon=["tag_weapon_elite"], max_pages=50):
                     "name": item["name"],
                     "hash_name": quote(item["name"]),
                     
-                    #Informacoes de Mercado
-                    "sell_listings": item.get("sell_listings", 0),
-                    "sell_price": item.get("sell_price_text", ""),
-                    "sale_price_text": item.get("sale_price_text", ""),
-                    
                     #Informacoes do Item
                     "type": item["asset_description"].get("type", ""),
                     "weapon_type": weapon.replace("tag_weapon_", ""),
