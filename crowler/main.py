@@ -1,5 +1,6 @@
 #import threading
 import conexao.conexao as connect
+import conexao.conexao_utils as cFunc
 
 
 RED = "\033[31m"
@@ -9,14 +10,14 @@ passW = "011234"
 
 if __name__ == "__main__":
     
+    # cFunc.inserir_precos()
+
     x = 3
 
     while x != 0:
-        x = int(input("Digite 1 para Popular Banco, 2 para Atualizar e 0 para sair!\n"))
+        x = int(input("Digite 2 para Atualizar e 0 para sair!\n"))
 
-        if x == 1:
-            print("BURRO! BURRO! BURRO!")
-        elif x == 2:
+        if x == 2:
 
             connect.update_DB(tag_weapon=[  #"tag_CSGO_Type_WeaponCase",
                                             #"tag_CSGO_Tool_Sticker",

@@ -2,6 +2,7 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from typing import List, Dict
+from crowlers import graph_skins as gs
 import time
 
 RED = "\033[31m"
@@ -19,25 +20,18 @@ def write_out(msg: str):
     except:
         pass
 
-
-# =============================
-#  CARREGAR SUPABASE
-# =============================
 load_dotenv()
+
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_SERVICE_KEY")
+
 
 if not url or not key:
     raise ValueError("As variáveis de ambiente SUPABASE_URL e SUPABASE_KEY são necessárias.")
 
 supabase: Client = create_client(url, key)
 
-
-
-# =============================
-#  FUNÇÕES DE RECONEXÃO
-# =============================
 
 def reconnect_client():
     global supabase
@@ -48,13 +42,7 @@ def reconnect_client():
 
 
 def resilient_execute(query, max_wait=15):
-    """
-    Executa uma query com tolerância a falha.
-    Se a conexão cair:
-        → espera reconectar
-        → se passar max_wait → recria cliente
-        → continua tentando até dar certo
-    """
+    
     start = time.time()
 
     while True:
@@ -91,10 +79,6 @@ def resilient_execute(query, max_wait=15):
             raise e
 
 
-
-# =============================
-# REMOVE DUPLICADOS
-# =============================
 def remove_duplicates(mat):
     real_result = []
 
@@ -111,10 +95,6 @@ def remove_duplicates(mat):
     return real_result
 
 
-
-# =============================
-# INSERT SKINS (com reconexão)
-# =============================
 def insert_skins(skins_data: List[Dict], table_name: str):
     
     total_skins = len(skins_data)
@@ -141,10 +121,6 @@ def insert_skins(skins_data: List[Dict], table_name: str):
     return successful_inserts
 
 
-
-# =============================
-# UPDATE SKINS (com reconexão)
-# =============================
 def update_skins(skins_data: List[Dict], table_name: str):
 
     total_skins = len(skins_data)
@@ -202,10 +178,6 @@ def update_skins(skins_data: List[Dict], table_name: str):
     return successful_updates
 
 
-
-# =============================
-# HISTORY ADAPTION
-# =============================
 def adapt_for_history(all_skins):
     all_skins_adapted = []
 
@@ -233,11 +205,6 @@ def adapt_for_history(all_skins):
     return all_skins_adapted, all_skins
 
 
-
-
-# =============================
-# NEWS ADAPTION
-# =============================
 def adapt_for_news(news):
 
     news = remover_duplicados_por_link(news)
@@ -271,57 +238,68 @@ def adapt_for_news(news):
     return news_adapted, themes_adapted
 
 
+def log_error(item, error):
+    with open("error_tuples.txt", "a", encoding="utf-8") as f:
+        f.write("====================================\n")
+        f.write(f"Erro: {error}\n")
+        f.write(f"Tupla: {item}\n")
+        f.write("====================================\n\n")
 
 
-# =============================
-# INSERT NEWS (com reconexão)
-# =============================
 def insert_news(news, themes):
 
     for new in news:
-        existe = resilient_execute(
-            supabase.table("news")
-            .select("link")
-            .eq("link", new["link"])
-            .limit(1)
-        )
+        try:
+            existe = resilient_execute(
+                supabase.table("news")
+                .select("link")
+                .eq("link", new["link"])
+                .limit(1)
+            )
+        except Exception as e:
+            log_error(new, f"Erro ao verificar existência: {e}")
+            continue
 
         if existe:
-            #msg = f"[WARN] News já existe: {new['titulo']}"
-            #print(msg); write_out(msg)
             ...
         else:
-            resilient_execute(
-                supabase.table("news").insert(new)
-            )
-            msg = f"[OK] News criada: {new['titulo']}"
-            print(msg); write_out(msg)
+            try:
+                resilient_execute(
+                    supabase.table("news").insert(new)
+                )
+                msg = f"[OK] News criada: {new['titulo']}"
+                print(msg); write_out(msg)
+            except Exception as e:
+                log_error(new, f"Erro ao inserir: {e}")
+                continue
 
     for theme in themes:
-        existe = resilient_execute(
-            supabase.table("news_themes")
-            .select("link")
-            .eq("link", theme["link"])
-            .eq("theme", theme["theme"])
-            .limit(1)
-        )
+        try:
+            existe = resilient_execute(
+                supabase.table("news_themes")
+                .select("link")
+                .eq("link", theme["link"])
+                .eq("theme", theme["theme"])
+                .limit(1)
+            )
+        except Exception as e:
+            log_error(theme, f"Erro ao verificar existência: {e}")
+            continue
 
         if existe:
-            #msg = f"[WARN] Tema já existe: {theme['theme']} para {theme['link']}"
-            #print(msg); write_out(msg)
             ...
         else:
-            resilient_execute(
-                supabase.table("news_themes").insert(theme)
-            )
-            msg = f"[OK] Tema inserido: {theme['theme']} para {theme['link']}"
-            print(msg); write_out(msg)
+            try:
+                resilient_execute(
+                    supabase.table("news_themes").insert(theme)
+                )
+                msg = f"[OK] Tema inserido: {theme['theme']} para {theme['link']}"
+                print(msg); write_out(msg)
+            except Exception as e:
+                log_error(theme, f"Erro ao inserir: {e}")
+                continue
 
 
-
-# =============================
-# REMOVE DUPLICADOS POR LINK
-# =============================
 def remover_duplicados_por_link(resultados):
     vistos = set()
     filtrados = []
@@ -333,3 +311,73 @@ def remover_duplicados_por_link(resultados):
             filtrados.append(item)
 
     return filtrados
+
+
+def inserir_precos():
+
+    try:
+        allskins = fetch_all_skins()
+
+        print(f"[OK] Skins carregadas: {len(allskins)}")
+
+    except Exception as e:
+        print("[ERRO] Não consegui buscar steam_skins:", e)
+        return
+
+    for skin in allskins:
+
+        print(f"Inserindo {skin["name"]}")
+
+        try:
+
+            dados = gs.graph_skins(skin["hash_name"], skin["name"])
+
+        except Exception as e:
+            
+            print(f"[ERRO] Falha ao buscar gráfico de {skin['name']}: {e}")
+            continue
+
+        if not dados:
+            print(f"[WARN] Nenhum dado para {skin['name']}")
+            continue
+
+        try:
+            resilient_execute(
+                supabase.table("price_history").insert(dados)
+            )
+            print(f"[OK] Inseridos {len(dados)} registros para {skin['name']}")
+        except Exception as e:
+            print(f"[ERRO] Falha ao inserir {skin['name']}: {e}")
+            continue
+
+
+def fetch_all_skins(batch=1000):
+    allskins = []
+    offset = 1000
+    while True:
+        try:
+            chunk = resilient_execute(
+                supabase.table("steam_skins")
+                         .select("hash_name,name")
+                         .limit(batch)
+                         .offset(offset)
+            )
+        except Exception as e:
+            print(f"[ERRO] limit/offset falhou em offset={offset}: {e}")
+            break
+
+        if not chunk:
+            break
+
+        allskins.extend(chunk)
+        print(f"[INFO] Puxados {len(chunk)} registros (total {len(allskins)})")
+
+        if len(chunk) < batch:
+            break
+
+        offset += batch
+
+    return allskins
+
+
+

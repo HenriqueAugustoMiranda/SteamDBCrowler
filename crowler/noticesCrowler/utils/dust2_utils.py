@@ -1,14 +1,15 @@
-import requests
-import random
+import aiohttp
+import asyncio
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import datetime, timedelta
+import random
 import re
-
 from noticesCrowler.classifier import classifier as c
 
-base_url = "https://www.dust2.com.br"
-arquivo_url = f"{base_url}/arquivo"
+
+BASE = "https://www.dust2.com.br"
+ARQUIVO = f"{BASE}/arquivo"
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
@@ -16,9 +17,8 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64)..."
 ]
 
-# Normaliza qualquer formato de data para YYYY-MM-DD HH:MM:SS
+
 def normalizar_data_dust2(texto_data: str) -> str:
-    
     if not texto_data:
         return ""
 
@@ -65,126 +65,121 @@ def normalizar_data_dust2(texto_data: str) -> str:
     except:
         pass
 
-    return texto_data  # fallback
+    return texto_data
 
-# Coleta todos os links de notícias
-def get_DUST2_links():
+
+async def fetch(session, url):
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    try:
+        print(f"[FETCH] Baixando: {url}")
+        async with session.get(url, headers=headers) as resp:
+            if resp.status != 200:
+                print(f"[FETCH][ERRO] Status {resp.status} em {url}")
+                return None
+            text = await resp.text()
+            print(f"[FETCH][OK] {url}")
+            return text
+    except Exception as e:
+        print(f"[FETCH][EXCEPTION] {url} -> {e}")
+        return None
+
+
+async def get_links():
 
     all_links = []
     offset = 0
+    maxoffset = 120
     step = 30
 
-    while True:
-        print(f"Buscando offset {offset}...")
-        resp = requests.get(f"{arquivo_url}?offset={offset}")
-        if resp.status_code != 200:
-            break
+    async with aiohttp.ClientSession() as session:
 
-        soup = BeautifulSoup(resp.text, "html.parser")
-        links_found = 0
+        while offset <= maxoffset:
+            
+            url = f"{ARQUIVO}?offset={offset}"
+            print(f"\n[LINKS] Coletando offset {offset}")
 
-        for a in soup.find_all("a", href=True):
-            full_url = urljoin(base_url, a["href"])
-            if full_url.startswith(f"{base_url}/noticias") and full_url not in all_links:
-                all_links.append(full_url)
-                links_found += 1
+            html = await fetch(session, url)
+            if not html:
+                print("[LINKS] HTML vazio, parando.")
+                break
 
-        if links_found == 0:
-            break
+            soup = BeautifulSoup(html, "html.parser")
+            links_found = 0
 
-        offset += step
+            for a in soup.find_all("a", href=True):
+                full = urljoin(BASE, a["href"])
+                if full.startswith(f"{BASE}/noticias"):
+                    if full not in all_links:
+                        all_links.append(full)
+                        links_found += 1
 
+            print(f"[LINKS] Encontrados neste offset: {links_found}")
+
+            if links_found == 0:
+                print("[LINKS] Nenhum link novo, fim.")
+                break
+
+            offset += step
+
+    print(f"\n[LINKS] TOTAL = {len(all_links)}")
     return all_links
 
-# Baixa e processa todas as notícias
-def get_DUST2_news(retries=5, timeout=15):
 
-    links = get_DUST2_links()
-    return [fetch_DUST2_news(link, retries, timeout) for link in links]
+async def fetch_news(session, link):
+    print(f"\n[NEWS] Baixando notícia: {link}")
+    html = await fetch(session, link)
 
-# Baixa e extrai campos de uma notícia
-def fetch_DUST2_news(link, retries=5, timeout=15):
+    if not html:
+        print(f"[NEWS][ERRO] Falhou: {link}")
+        return None
 
-    print("\n" + "="*70)
-    print(f"Baixando: {link}")
-    print("="*70)
-
-    html_text = None
-
-    # Tentativas com retry
-    for tent in range(1, retries + 1):
-        try:
-            headers = {"User-Agent": random.choice(USER_AGENTS)}
-            print(f"GET tentativa {tent}/{retries}")
-            resp = requests.get(link, headers=headers, timeout=timeout)
-            resp.raise_for_status()
-            html_text = resp.text
-            print("OK.")
-            break
-        except Exception as e:
-            print(f"Erro: {e}")
-            if tent == retries:
-                raise
-            print("Retry...")
-
-    soup = BeautifulSoup(html_text, "html.parser")
+    soup = BeautifulSoup(html, "html.parser")
 
     # Título
-    title_sel = soup.find("h1", class_="headline") or soup.find("h1")
-    title = title_sel.get_text(strip=True) if title_sel else ""
-    print(f"[TITLE] {title}")
+    title_el = soup.find("h1", class_="headline") or soup.find("h1")
+    title = title_el.get_text(strip=True) if title_el else ""
+    print(f"[NEWS][TITLE] {title}")
 
     # Data
-    date_raw = ""
     date_block = soup.find("div", class_="article-info-published-time")
-    if date_block:
-        span = date_block.find("span")
-        date_raw = span.get_text(" ", strip=True) if span else date_block.get_text(" ", strip=True)
-    else:
-        meta_time = soup.find("meta", {"property": "og:article:published_time"}) or soup.find("time")
-        if meta_time and meta_time.get("content"):
-            date_raw = meta_time["content"].strip()
-
-    date = normalizar_data_dust2(date_raw) if date_raw else ""
-    print(f"[DATE] {date}")
+    span = date_block.find("span") if date_block else None
+    date_raw = span.get_text(" ", strip=True) if span else ""
+    date = normalizar_data_dust2(date_raw)
+    print(f"[NEWS][DATE] {date}")
 
     # Descrição
-    desc_meta = soup.find("meta", attrs={"name": "description"})
-    description = desc_meta["content"].strip() if desc_meta and desc_meta.get("content") else ""
-    print(f"[DESC] {description}")
+    meta_desc = soup.find("meta", {"name": "description"})
+    description = meta_desc["content"].strip() if meta_desc else ""
+    print(f"[NEWS][DESC] {description[:50]}...")
 
     # Autor
     author_block = soup.find("div", class_="article-info-author")
+    author = ""
     if author_block:
         author = author_block.get_text(" ", strip=True).replace("Escrito por", "").strip()
-    else:
-        meta = soup.find("meta", {"property": "og:article:author"})
-        author = meta["content"].strip() if meta else ""
-    print(f"[AUTHOR] {author}")
+    print(f"[NEWS][AUTHOR] {author}")
 
     # Conteúdo
-    print("[CONTENT] extraindo...")
-    content = ""
-    content_container = (
+    content_block = (
         soup.select_one("div.news-item-content-container[itemprop='articleBody']")
-        or soup.select_one("div.news-item-content-container")
         or soup.find("div", class_="article-body")
-        or soup.find("div", class_="prose")
     )
 
-    if content_container:
-        ps = content_container.find_all("p")
-        content = "\n".join([p.get_text(strip=True) for p in ps])
-        print(f"[CONTENT] {len(ps)} parágrafos.")
+    content = ""
+    if content_block:
+        paragraphs = content_block.find_all("p")
+        content = "\n".join([p.get_text(strip=True) for p in paragraphs])
+        print(f"[NEWS][CONTENT] {len(paragraphs)} parágrafos")
     else:
-        print("[CONTENT] não encontrado.")
+        print("[NEWS][CONTENT] NENHUM parágrafo encontrado")
 
     # Classificação
     temas = c.classify_text(title, content)
-    print(f"[THEMES] {temas}")
+    print(f"[NEWS][THEMES] {temas}")
 
-    # Resultado final
-    resultado = {
+    print(f"[NEWS][OK] Finalizada: {link}")
+
+    return {
         "theme": temas,
         "titulo": title,
         "link": link,
@@ -195,6 +190,29 @@ def fetch_DUST2_news(link, retries=5, timeout=15):
         "fonte": "DUST2"
     }
 
-    print("[OK] notícia pronta.")
-    print("="*70)
-    return resultado
+
+async def get_all_news(concurrency=200):
+    links = await get_links()
+    print(f"\n[MAIN] TOTAL DE LINKS = {len(links)}\n")
+
+    sem = asyncio.Semaphore(concurrency)
+
+    async with aiohttp.ClientSession() as session:
+
+        async def safe_fetch(link):
+            async with sem:
+                print(f"[QUEUE] Iniciando tarefa para: {link}")
+                result = await fetch_news(session, link)
+                print(f"[QUEUE] Finalizada tarefa: {link}")
+                return result
+
+        tasks = [asyncio.create_task(safe_fetch(l)) for l in links]
+        results = await asyncio.gather(*tasks)
+
+    filtered = [r for r in results if r]
+    print(f"\n[MAIN] TOTAL PROCESSADAS = {len(filtered)}")
+    return filtered
+
+
+async def get_DUST2_news():
+    return await get_all_news()
