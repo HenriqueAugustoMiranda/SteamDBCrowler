@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <img src="${img}" class="ak-img" alt="${skin.nome}">
       <p>US$ ${skin.preco}</p>
       <button class="visualizar-btn">Visualizar</button>
-      <button id="save-btn" class="save-btn"><img src="../asstes/diskette.png" style="width:13px; height:13px;"></button>
+      <button class="save-btn"><img src="assets/heart.png" class="heart-icon" alt="Salvar"></button>
     `;
       div.querySelector('.visualizar-btn').onclick = () => {
           window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
@@ -319,17 +319,101 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach(el => el.addEventListener("change", () => renderizarSkins(1)));
 
   function renderizarPaginacao(totalPaginas) {
-    const pagContainer = document.getElementById("paginacao");
-    pagContainer.innerHTML = "";
+      const pagContainer = document.getElementById("paginacao");
+      pagContainer.innerHTML = "";
+      
+      const MAX_VISIBLE_BUTTONS = 3; 
+      const halfWindow = Math.floor(MAX_VISIBLE_BUTTONS / 2);
 
-    for (let i = 1; i <= totalPaginas; i++) {
-      const btn = document.createElement("button");
-      btn.innerText = i;
-      btn.onclick = () => renderizarSkins(i);
-      if (i === paginaAtual) btn.style.fontWeight = "bold";
-      pagContainer.appendChild(btn);
-    }
+      let startPage = Math.max(2, paginaAtual - halfWindow); 
+      let endPage = Math.min(totalPaginas - 1, paginaAtual + halfWindow);
+      
+      if (endPage - startPage + 1 < MAX_VISIBLE_BUTTONS) {
+          if (paginaAtual <= halfWindow + 1) {
+              endPage = Math.min(totalPaginas - 1, MAX_VISIBLE_BUTTONS + 1);
+          } else if (paginaAtual >= totalPaginas - halfWindow) {
+              startPage = Math.max(2, totalPaginas - MAX_VISIBLE_BUTTONS);
+          }
+      }
+
+      const createButton = (text, pageNumber) => {
+          const btn = document.createElement("button");
+          btn.innerText = text;
+          btn.onclick = () => renderizarSkins(pageNumber);
+          if (pageNumber === paginaAtual) {
+              btn.className = "active-page"; 
+              btn.disabled = true; 
+          }
+          pagContainer.appendChild(btn);
+      };
+      
+      const addDots = () => {
+          const dots = document.createElement("span");
+          dots.innerText = "...";
+          dots.className = "pagination-separator";
+          pagContainer.appendChild(dots);
+      };
+      
+      if (paginaAtual > 1) {
+          createButton("<", paginaAtual - 1);
+      }
+
+      createButton("1", 1);
+
+      if (startPage > 2) { 
+          addDots();
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+          createButton(i.toString(), i);
+      }
+      
+      if (endPage < totalPaginas - 1) { 
+          addDots();
+      }
+
+      if (totalPaginas > 1) { 
+          createButton(totalPaginas.toString(), totalPaginas); 
+      }
+      
+      if (paginaAtual < totalPaginas) {
+          createButton(">", paginaAtual + 1);
+      }
+      
+      const inputDiv = document.createElement("div");
+      inputDiv.className = "manual-page-input";
+      inputDiv.innerHTML = `
+          <input type="number" id="page-input" min="1" max="${totalPaginas}" placeholder="${paginaAtual}">
+          <button id="go-to-page-btn">Ir</button>
+      `;
+
+      pagContainer.appendChild(inputDiv);
+      
+      const pageInput = document.getElementById("page-input");
+      const goToPageBtn = document.getElementById("go-to-page-btn");
+
+      const navigateToPage = () => {
+          let pageToGo = Number(pageInput.value);
+          
+          if (pageToGo >= 1 && pageToGo <= totalPaginas) {
+              renderizarSkins(pageToGo);
+              pageInput.value = '';
+          } else {
+              alert(`Por favor, insira um número entre 1 e ${totalPaginas}.`);
+              pageInput.value = ''; 
+          }
+      };
+      
+      goToPageBtn.addEventListener("click", navigateToPage);
+      
+      pageInput.addEventListener("keypress", (event) => {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+              event.preventDefault();
+              navigateToPage();
+          }
+      });    
   }
+
 
   async function iniciar() {
     loginOverlay.style.display = "none";
@@ -340,5 +424,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   iniciar();
+
 
 });
