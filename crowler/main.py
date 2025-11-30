@@ -1,5 +1,6 @@
 #import threading
 import conexao.conexao as connect
+import conexao.conexao_utils as cFunc
 
 
 RED = "\033[31m"
@@ -9,6 +10,8 @@ passW = "011234"
 
 if __name__ == "__main__":
     
+    # cFunc.inserir_precos()
+
     x = 3
 
     while x != 0:

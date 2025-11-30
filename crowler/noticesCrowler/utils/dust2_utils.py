@@ -85,12 +85,16 @@ async def fetch(session, url):
 
 
 async def get_links():
+
     all_links = []
-    offset = 5310
+    offset = 0
+    maxoffset = 120
     step = 30
 
     async with aiohttp.ClientSession() as session:
-        while True:
+
+        while offset <= maxoffset:
+            
             url = f"{ARQUIVO}?offset={offset}"
             print(f"\n[LINKS] Coletando offset {offset}")
 
