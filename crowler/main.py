@@ -1,5 +1,6 @@
 #import threading
 import conexao.conexao as connect
+import conexao.conexao_utils as cFunc
 
 
 RED = "\033[31m"
@@ -10,6 +11,8 @@ passW = "011234"
 if __name__ == "__main__":
     
     x = 3
+    # cFunc.imprimir_skins_sem_historico()
+    cFunc.inserir_precos()
 
     while x != 0:
         x = int(input("Digite 2 para Atualizar e 0 para sair!\n"))

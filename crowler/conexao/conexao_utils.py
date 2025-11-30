@@ -316,7 +316,7 @@ def remover_duplicados_por_link(resultados):
 def inserir_precos():
 
     try:
-        allskins = fetch_all_skins()
+        allskins = pegar_skins_sem_historico()
 
         print(f"[OK] Skins carregadas: {len(allskins)}")
 
@@ -351,33 +351,13 @@ def inserir_precos():
             continue
 
 
-def fetch_all_skins(batch=1000):
-    allskins = []
-    offset = 1000
-    while True:
-        try:
-            chunk = resilient_execute(
-                supabase.table("steam_skins")
-                         .select("hash_name,name")
-                         .limit(batch)
-                         .offset(offset)
-            )
-        except Exception as e:
-            print(f"[ERRO] limit/offset falhou em offset={offset}: {e}")
-            break
 
-        if not chunk:
-            break
-
-        allskins.extend(chunk)
-        print(f"[INFO] Puxados {len(chunk)} registros (total {len(allskins)})")
-
-        if len(chunk) < batch:
-            break
-
-        offset += batch
-
-    return allskins
-
-
+def pegar_skins_sem_historico():
+    response = (
+        supabase
+        .rpc("get_skins_without_history")
+        .range(0, 11000)
+        .execute()
+    )
+    return response.data
 
