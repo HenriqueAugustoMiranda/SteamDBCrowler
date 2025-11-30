@@ -45,7 +45,7 @@ def update_DB(tag_weapon=[]):
             tags[0] = tag
 
             all_skins = cFunc.remove_duplicates(sksc.get_all_skins(tags))
-            skins_adapted, all_skins = cFunc.adapt_for_history(all_skins)
+            # skins_adapted, all_skins = cFunc.adapt_for_history(all_skins)
             
             if not all_skins:
                 msg = f"{BLUE}[ERRO]{RESET} Nenhuma skin foi coletada"
@@ -60,8 +60,8 @@ def update_DB(tag_weapon=[]):
             for skin_line in all_skins:
                 inserted_count = cFunc.update_skins(skin_line, "steam_skins")
 
-            msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins inseridas com sucesso!"
-            print(msg); write_out(msg)
+            # msg = f"\n{GREEN}Concluído!{RESET} {inserted_count}/{len(skins_adapted)} skins inseridas com sucesso!"
+            # print(msg); write_out(msg)
 
         cFunc.inserir_precos()
 
