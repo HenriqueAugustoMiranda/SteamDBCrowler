@@ -19,7 +19,7 @@ def write_out(msg: str):
         pass
 
 async def processar():
-    type = 3
+    type = 1
     while type <= 3:
         news_data = await nC.main(type)
         news, themes = cFunc.adapt_for_news(news_data)

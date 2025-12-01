@@ -5,6 +5,7 @@ from typing import List, Dict
 from crowlers import graph_skins as gs
 import time
 
+
 RED = "\033[31m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
@@ -95,31 +96,6 @@ def remove_duplicates(mat):
     return real_result
 
 
-def insert_skins(skins_data: List[Dict], table_name: str):
-    
-    total_skins = len(skins_data)
-    successful_inserts = 0
-    
-    for i, skin_data in enumerate(skins_data, 1):
-        try:
-            response = resilient_execute(
-                supabase.table(table_name).insert(skin_data)
-            )
-
-            if response:
-                successful_inserts += 1
-                msg = f"{GREEN}[OK]{RESET} Skin {i}/{total_skins} inserida: {skin_data.get('name', 'N/A')}"
-                print(msg); write_out(msg)
-            else:
-                msg = f"{YELLOW}[WARN]{RESET} Skin {i}/{total_skins} inserida mas sem dados de retorno: {skin_data.get('name', 'N/A')}"
-                print(msg); write_out(msg)
-                
-        except Exception as e:
-            msg = f"{RED}[ERRO]{RESET} Erro na skin {i}/{total_skins} ({skin_data.get('name', 'N/A')}): {e}"
-            print(msg); write_out(msg)
-    
-    return successful_inserts
-
 
 def update_skins(skins_data: List[Dict], table_name: str):
 
@@ -177,32 +153,6 @@ def update_skins(skins_data: List[Dict], table_name: str):
 
     return successful_updates
 
-
-def adapt_for_history(all_skins):
-    all_skins_adapted = []
-
-    # Cria skins adaptadas com todos os campos
-    for skin_line in all_skins:
-        skins_adapted = []
-
-        for item in skin_line:
-            skin = {
-                "name": item['name'],
-                "sell_listings": item['sell_listings'],
-                "sell_price": item['sell_price'],
-                "sale_price_text": item.get('sale_price_text')  # mantemos no adaptado
-            }
-            skins_adapted.append(skin)
-
-        all_skins_adapted.append(skins_adapted)
-
-    # Remove os atributos de preço do all_skins original
-    for skin_line in all_skins:
-        for item in skin_line:
-            for key in ['sell_price', 'sale_price_text', 'sell_listings']:
-                item.pop(key, None)  # remove se existir, sem quebrar
-
-    return all_skins_adapted, all_skins
 
 
 def adapt_for_news(news):
@@ -360,4 +310,27 @@ def pegar_skins_sem_historico():
         .execute()
     )
     return response.data
+
+
+
+# def atualizar_d2_datas():
+
+#     try:
+#         resp = supabase.rpc("d2_news").execute()
+#         d2_news = resp.data
+#     except Exception as e:
+#         print("[ERRO] Falha ao buscar notícias:", e)
+#         return
+
+#     for new in d2_news:
+#         try:
+#             supabase.rpc("update_d2_dates", {
+#                 "n_link": new["link"],
+#                 "n_date": correct_date(new["date"])
+#             }).execute()
+#         except Exception as e:
+#             print("[ERRO] Falha ao atualizar:", new["link"], e)
+
+
+
 
