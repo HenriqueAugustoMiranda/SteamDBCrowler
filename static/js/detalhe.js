@@ -54,9 +54,9 @@ const link_inicio = "https://community.fastly.steamstatic.com/economy/image/";
     async function buscarHistorico(nome) {
       const { data, error } = await client
         .from("price_history")
-        .select("sell_price, recorded_at")
+        .select("sell_price, date")
         .eq("name", nome)
-        .order("recorded_at", { ascending: true });
+        .order("date", { ascending: true });
 
       if (error) {
         console.error("Erro ao buscar histórico:", error);
@@ -67,7 +67,7 @@ const link_inicio = "https://community.fastly.steamstatic.com/economy/image/";
         .map(h => {
           const preco = Number(h.sell_price.replace('$','')); // converte para número
           const menor_preco = Number(h.sell_price.replace('$',''));
-          const dataObj = h.recorded_at ? new Date(h.recorded_at) : null;
+          const dataObj = h.date ? new Date(h.date) : null;
           return { preco, menor_preco, data: dataObj };
         })
         .filter(h => !isNaN(h.preco) && h.data !== null);
