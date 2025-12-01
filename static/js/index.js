@@ -146,6 +146,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function remover_interesse_em(email, skin_name){
+    try {
+      const { error } = await client
+        .from("interest")
+        .delete()
+        .eq("email", email)
+        .eq("skin", skin_name);
+      
+      if (error) {
+        console.error("Erro detalhado ao remover:", error);
+        return false;
+      }
+      
+      alert("Skin removida dos salvos com sucesso!");
+      return true;
+    } catch (err) {
+      console.error("Erro geral ao remover:", err);
+      return false;
+    }
+  }
+
   // Dropdown skins por página
   const selectSkinsPorPagina = document.getElementById("filtro-skins-por-pagina");
   selectSkinsPorPagina.addEventListener("change", () => {
@@ -305,32 +326,68 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("container-skins");
     container.innerHTML = "";
 
-    const filtradas = await filtrarESortearSkins(); // aguarda a funcao de filtro
+    const filtradas = await filtrarESortearSkins(); 
     const totalPaginas = Math.ceil(filtradas.length / skinsPorPagina);
-    paginaAtual = Math.min(Math.max(1, pagina), totalPaginas || 1); // garante que a pagina minima eh 1
+    paginaAtual = Math.min(Math.max(1, pagina), totalPaginas || 1); 
 
     const inicio = (paginaAtual - 1) * skinsPorPagina;
     const fim = inicio + skinsPorPagina;
     const skinsPagina = filtradas.slice(inicio, fim);
 
+    // 1. CARREGA SKINS SALVAS ANTES DE RENDERIZAR
+    let skinsDeInteresseNomes = [];
+    if (is_logged === 1) {
+      // carregarSkinsDeInteresse retorna um array de nomes (strings)
+      skinsDeInteresseNomes = await carregarSkinsDeInteresse(userMail); 
+    }
+
     skinsPagina.forEach(skin => {
       const div = document.createElement("div");
       div.className = "item";
       const img = skin.img.startsWith("http") ? skin.img : link_inicio + skin.img;
+      
+      // Verifica se a skin já está salva
+      const isSaved = skinsDeInteresseNomes.includes(skin.nome); 
+      const saveButtonClass = isSaved ? "save-btn saved" : "save-btn";
+
       div.innerHTML = `
       <h3>${skin.nome}</h3>
       <img src="${img}" class="ak-img" alt="${skin.nome}">
       <p>US$ ${skin.preco}</p>
       <button class="visualizar-btn">Visualizar</button>
-      <button id="save-btn" class="save-btn"><img src="/static/assets/diskette.png" style="width:13px; height:13px;"></button>
+      <button id="save-btn" class="${saveButtonClass}"><img src="/static/assets/diskette.png" style="width:13px; height:13px;"></button>
     `;
       div.querySelector('.visualizar-btn').onclick = () => {
           window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
       };
 
+      // 2. LÓGICA DE SALVAR/REMOVER NO CLIQUE
       div.querySelector('.save-btn').onclick = async () => {
         if(is_logged === 1){
-          await interesse_em(userMail, skin.nome);
+          const isCurrentlySaved = skinsDeInteresseNomes.includes(skin.nome);
+          let sucesso;
+
+          if (isCurrentlySaved) {
+            // REMOVER
+            sucesso = await remover_interesse_em(userMail, skin.nome); 
+          } else {
+            // SALVAR
+            sucesso = await interesse_em(userMail, skin.nome);
+          }
+
+          if (sucesso) {
+            // Atualiza a lista e paginação se estiver no filtro de salvas
+            if (filtroSkinsSalvasAtivo) {
+              renderizarSkins(1); // Redesenha a partir da primeira página
+            } else {
+              // Apenas atualiza o estado visual do botão na tela atual
+              div.querySelector('.save-btn').classList.toggle('saved');
+              // Para manter o array de skinsDeInteresseNomes atualizado, recarregue ele e chame renderizarSkins, ou manipule o array
+              // O mais simples é chamar renderizarSkins(paginaAtual)
+              renderizarSkins(paginaAtual); 
+            }
+          }
+
         } else {
           loginOverlay.style.display = "flex";
         }
