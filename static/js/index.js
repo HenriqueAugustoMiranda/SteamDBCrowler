@@ -220,10 +220,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let maisSkins = true;
 
     while (maisSkins) {
-      const { data, error } = await client
-        .from("steam_skins")
-        .select("*")
-        .range(offset, offset + batchSize - 1);
+
+      const { data, error } = await client.rpc("skins_com_preco", {
+        s_offset: offset,
+        s_limit: (offset + batchSize - 1)
+      });
+
+      // const { data, error } = await client
+      //   // .from("steam_skins")
+      //   .rpc("skins_com_preco")
+      //   .range(offset, offset + batchSize - 1);
 
       if (error) {
         console.error("Erro ao buscar skins:", error);

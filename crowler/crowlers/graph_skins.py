@@ -12,7 +12,7 @@ REQUEST_MIN_DELAY = 0.8
 REQUEST_MAX_DELAY = 2.2
 
 BATCH_DELAY = (4, 9)
-SAFE_MODE_DELAY = (15, 30)
+SAFE_MODE_DELAY = (150, 300)
 
 MAX_RETRIES = 10
 
@@ -112,7 +112,7 @@ def baixar_html_com_resiliencia(url):
 def exponential_wait(attempt, safe_mode):
     if safe_mode:
         return random.uniform(*SAFE_MODE_DELAY)
-    return min(90, (2 ** attempt) + random.uniform(1, 4))
+    return min(90, (5 ** attempt) + random.uniform(4, 8))
 
 
 def processar_dados(name, data):
