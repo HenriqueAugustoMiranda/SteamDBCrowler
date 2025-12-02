@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let skins = [];
   let is_logged = 0;
   let userMail = null;
+  let filtroInteresseAtivo = false;
 
   const SUPABASE_URL = "https://lpfawvedzxmjoaznbnkb.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZmF3dmVkenhtam9hem5ibmtiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjYwNDIxNywiZXhwIjoyMDcyMTgwMjE3fQ.GdhC4Q0g9IttUki13_aCd0assoMUi3Us8p7LJxQIMTk";
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const saveFilter = document.getElementById("save-filter");
+  const saveFilterIcon = document.querySelector("#save-filter img");
 
   const loginOverlay = document.getElementById("loginOverlay");
   const btnAbrirLogin = document.getElementById("btn-login");
@@ -54,6 +56,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+saveFilter.addEventListener("click", async () => {
+      if (is_logged === 0) {
+          loginOverlay.style.display = "flex";
+          return;
+      }
+      
+      // Alterna o estado do filtro
+      filtroInteresseAtivo = !filtroInteresseAtivo;
+      
+      // Atualiza o visual do botão/imagem
+      if (filtroInteresseAtivo) {
+          // Destaca o botão quando ativo
+          saveFilterIcon.style.border = "2px solid #2a8aed"; 
+          saveFilterIcon.style.borderRadius = "5px";
+      } else {
+          // Remove o destaque quando inativo
+          saveFilterIcon.style.border = "none";
+      }
+
+      renderizarSkins(1); // Renderiza na primeira página com o novo filtro aplicado
+  });
+
   bntEntrarCadastro.addEventListener("click", async () => {
     
     if (!inputEmailCadastro.value || !inputSenhaCadastro.value || !pnome.value || !unome.value) {
@@ -86,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Erro ao cadastrar usuário:", error)
     }
   });
-
 
   bntEntrarLogin.addEventListener("click", async () => {
     
@@ -179,6 +202,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return !!data;
   }
 
+  function parsePreco(precoString) {
+    if (typeof precoString === 'number') return precoString;
+    if (!precoString) return 0;
+    
+    const precoLimpo = String(precoString).replace(/[^0-9.]/g, '');
+    
+    const preco = parseFloat(precoLimpo);
+    
+    return isNaN(preco) ? 0 : preco;
+}
+
   async function filtrarInteresse(email, skin_name) {
     try {
         const { data, error } = await client
@@ -200,6 +234,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 }
 
+async function getSkinsInteressadas(email) {
+      try {
+          const { data, error } = await client
+              .from("interest")
+              .select("skin")
+              .eq("email", email);
+          
+          if (error) {
+              console.error("Erro ao buscar interesses do usuário:", error);
+              return [];
+          }
+          
+          // Retorna apenas um array com os nomes das skins
+          return data.map(item => item.skin);
+          
+      } catch (err) {
+          console.error("Erro na requisição para obter interesses:", err);
+          return [];
+      }
+  }
+
   async function cadastrarUsuario(email, senha, pnome, unome){
     const { data, error } = await client
       .from("users")
@@ -213,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  async function carregarTodasSkins() {
+  async function carregarTodasSkins() { 
     const todasSkins = [];
     const batchSize = 1000;
     let offset = 0;
@@ -241,7 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
       nome: skin.name,
       arma: skin.weapon_type,
       preco: skin.sell_price,
-      img: skin.icon_url
+      img: skin.icon_url,
+      raridade: skin.type
     }));
   }
 
@@ -250,36 +306,94 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number(precoStr.replace(/[^0-9.]/g, ""));
   }
 
-  function filtrarESortearSkins() {
-
-    const busca = document.getElementById("filtro-busca").value;
-    const arma = document.getElementById("filtro-arma").value;
-    const qualidade = document.getElementById("filtro-qualidade").value;
-    const stattrak = document.getElementById("filtro-stattrak").value;
-    const ordenar = document.getElementById("filtro-ordenar").value;
-
-    return skins
-      .filter(skin => {
-        const stattrakBool = skin.stattrak === true || skin.stattrak === "true";
-        return (
-          (arma === "" || skin.arma === arma) &&
-          (qualidade === "" || (skin.qualidade && skin.qualidade === qualidade)) &&
-          (stattrak === "" || stattrakBool === (stattrak === "true")) &&
-          (skin.nome.toLowerCase().includes(busca))
-        );
-      })
-      .sort((a, b) => {
-        if (ordenar === "preco-crescente") return parsePreco(a.preco) - parsePreco(b.preco);
-        if (ordenar === "preco-decrescente") return parsePreco(b.preco) - parsePreco(a.preco);
-        return 0;
-      });
+async function deletarInteresse(email, skin_name){
+    try {
+      const { error } = await client
+        .from("interest")
+        .delete()
+        .eq("email", email)
+        .eq("skin", skin_name);
+      
+      if (error) {
+        console.error("Erro ao deletar interesse:", error);
+        return false;
+      }
+      
+      alert("Skin removida dos seus interesses!");
+      return true;
+    } catch (err) {
+      console.error("Erro geral ao deletar interesse:", err);
+      return false;
+    }
   }
 
-  function renderizarSkins(pagina = 1) {
+let skinsInteressadas = [];
+
+async function filtrarESortearSkins() {
+
+  const busca = document.getElementById("filtro-busca").value.toLowerCase();
+  const arma = document.getElementById("filtro-arma").value;
+  const qualidade = document.getElementById("filtro-qualidade").value;
+  const stattrak = document.getElementById("filtro-stattrak").value;
+  const ordenar = document.getElementById("filtro-ordenar").value;
+
+  let skinsParaFiltrar = skins;
+
+  if (filtroInteresseAtivo) {
+      if (skinsInteressadas.length === 0) {
+         skinsInteressadas = await getSkinsInteressadas(userMail);
+      }
+      
+      skinsParaFiltrar = skinsParaFiltrar.filter(skin => 
+          skinsInteressadas.includes(skin.nome)
+      );
+  } else {
+      skinsInteressadas = [];
+  }
+
+  return skinsParaFiltrar
+    .filter(skin => {
+      const nomeLimpo = skin.nome.trim();
+      
+      const isStatTrakSkin = nomeLimpo.startsWith("StatTrak") || nomeLimpo.startsWith("★ StatTrak");
+      
+      const stattrakFilterCondition = 
+        stattrak === "" ||
+        (stattrak === "true" && isStatTrakSkin) ||
+        (stattrak === "false" && !isStatTrakSkin);
+        
+      let qualidadeMatch = true; 
+      
+      if (qualidade !== "") {
+          const raridadeDaSkin = skin.raridade ? skin.raridade.toLowerCase() : "";
+          const filtroNormalizado = qualidade.toLowerCase();
+
+          if (filtroNormalizado === "covert") {
+              qualidadeMatch = raridadeDaSkin.includes("covert") || raridadeDaSkin.includes("extraordinary");
+          } else {
+              qualidadeMatch = raridadeDaSkin.includes(filtroNormalizado);
+          }
+      }
+        
+      return (
+        (arma === "" || skin.arma === arma) &&
+        qualidadeMatch &&
+        stattrakFilterCondition && 
+        (skin.nome.toLowerCase().includes(busca))
+      );
+    })
+    .sort((a, b) => {
+      if (ordenar === "preco-crescente") return parsePreco(a.preco) - parsePreco(b.preco);
+      if (ordenar === "preco-decrescente") return parsePreco(b.preco) - parsePreco(a.preco);
+      return 0;
+    });
+}
+
+  async function renderizarSkins(pagina = 1) {
     const container = document.getElementById("container-skins");
     container.innerHTML = "";
 
-    const filtradas = filtrarESortearSkins();
+    const filtradas = await filtrarESortearSkins();
     const totalPaginas = Math.ceil(filtradas.length / skinsPorPagina);
     paginaAtual = Math.min(Math.max(1, pagina), totalPaginas);
 
@@ -296,17 +410,38 @@ document.addEventListener("DOMContentLoaded", () => {
       <img src="${img}" class="ak-img" alt="${skin.nome}">
       <p>US$ ${skin.preco}</p>
       <button class="visualizar-btn">Visualizar</button>
-      <button class="save-btn"><img src="assets/heart.png" class="heart-icon" alt="Salvar"></button>
+      <button class="save-btn"><img src="/static/assets/heart.png" class="heart-icon" alt="Salvar"></button>
     `;
       div.querySelector('.visualizar-btn').onclick = () => {
           window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
       };
 
       div.querySelector('.save-btn').onclick = async () => {
-        if(is_logged === 1){
-          interesse_em(userMail, skin.nome);
-        } else {
+        if(is_logged !== 1){
+          // Se não estiver logado, abre a modal de login
           loginOverlay.style.display = "flex";
+          return;
+        }
+
+        const skinName = skin.nome;
+        
+        // Verifica se a skin já está salva
+        const isSaved = await filtrarInteresse(userMail, skinName);
+
+        if (isSaved) {
+            // Se já está salva, remove
+            await deletarInteresse(userMail, skinName);
+        } else {
+            // Se não está salva, adiciona
+            await interesse_em(userMail, skinName);
+        }
+        
+        // Se o filtro de "Skins Salvas" estiver ativo, 
+        // é crucial limpar o cache e re-renderizar para que a lista seja atualizada.
+        if (filtroInteresseAtivo) {
+            // Limpa o array cache para que a próxima chamada de filtrarESortearSkins atualize
+            skinsInteressadas = []; 
+            renderizarSkins(paginaAtual); 
         }
       };
 
