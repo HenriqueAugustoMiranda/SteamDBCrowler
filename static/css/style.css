@@ -199,12 +199,68 @@ h1 {
 
 .container {
     max-width: 850px;
-    margin: 40px 0 40px 40px;
+    width: 100%;
+    margin: 0;
+    
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    text-align: left; 
+}
+
+.main-content {
+    display: flex;
+    justify-content: center; /* Centraliza o bloco principal na tela */
+    max-width: 1400px; /* Limite máximo para a largura total do conteúdo */
+    margin: 40px auto; /* Centraliza o bloco main-content na tela */
+    gap: 30px; /* Espaço entre a coluna da esquerda e a da direita */
+    padding: 0 20px;
+}
+
+.news-container {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    text-align: left; 
+}
+
+.news-container h2 {
+    margin-top: 0;
     text-align: center;
+    margin-bottom: 20px;
+    color: var(--preto);
+}
+
+.news-item {
+    background-color: var(--cinza-claro);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 5px solid var(--vermelho); /* Destaque visual */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.news-item:hover {
+    background-color: #e0e0e0;
+}
+
+/* Título da Notícia (texto maior na parte de cima) */
+.news-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em; 
+    color: var(--preto);
+}
+
+/* Descrição da Notícia (texto menor embaixo) */
+.news-item p {
+    margin: 0;
+    font-size: 0.85em; 
+    color: var(--cinza);
 }
 
 .skin-img {

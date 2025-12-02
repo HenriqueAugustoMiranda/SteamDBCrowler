@@ -52,8 +52,6 @@ async function buscarSkin(nome) {
     console.warn("Aviso: Erro ao buscar preço via RPC. Usando N/A.", precoError);
   }
 
-  // const precoInfo = precoData && precoData.length > 0 ? precoData[0] : {}; 
-
   return {
     nome: skinData.name,
     arma: skinData.weapon_type,
@@ -77,37 +75,75 @@ async function buscarHistorico(nome) {
 
   return data
     .map(h => {
-      // 1. VERIFICAÇÃO PARA EVITAR O TYPEERROR (Linha 68 original)
       let precoNum = 0;
       let menorPrecoNum = 0;
       
       if (typeof h.sell_price === 'string') {
-          // Garante que é uma string antes de chamar replace()
           const precoLimpo = h.sell_price.replace('$', '');
           precoNum = Number(precoLimpo);
-          menorPrecoNum = Number(precoLimpo); // Assumindo que menor_preco é o mesmo valor aqui, como no seu código original
+          menorPrecoNum = Number(precoLimpo);
       } else if (typeof h.sell_price === 'number') {
-          // Se for um número, usa o valor diretamente
           precoNum = h.sell_price;
           menorPrecoNum = h.sell_price;
       }
       
       const dataObj = h.date ? new Date(h.date) : null;
       
-      // 2. CORREÇÃO DO REFERENCE ERROR (mudando o nome da propriedade para 'dateObj')
       return { preco: precoNum, menor_preco: menorPrecoNum, dateObj: dataObj };
     })
-    // 3. ATUALIZAÇÃO DO FILTER COM O NOME CORRETO DA PROPRIEDADE
     .filter(h => !isNaN(h.preco) && h.dateObj !== null); 
+}
+
+async function buscarNoticiasRelacionadas(nome) {
+  const { data, error } = await client.rpc("relacionar_news_skins", {
+    s_name: nome
+  });
+
+  if (error) {
+    console.error("Erro ao buscar notícias relacionadas:", error);
+    return [];
+  }
+  
+  return data || [];
+}
+
+function renderizarNoticias(noticias) {
+  const newsList = document.getElementById('news-list');
+  newsList.innerHTML = '';
+
+  if (noticias.length === 0) {
+    newsList.innerHTML = '<p>Nenhuma notícia relacionada encontrada.</p>';
+    return;
+  }
+
+  noticias.forEach(noticia => {
+    const divNoticia = document.createElement('div');
+    divNoticia.className = 'news-item';
+    
+    divNoticia.innerHTML = `
+      <h4>${noticia.titulo || 'Sem Título'}</h4>
+      <p>${noticia.descricao || 'Sem descrição.'}</p>
+    `;
+
+    if (noticia.link) { 
+        divNoticia.onclick = () => window.open(noticia.link, '_blank');
+    }
+    
+    newsList.appendChild(divNoticia);
+  });
 }
 
 async function renderizarDetalhe() {
   const nome = getSkinNome();
-  const skin = await buscarSkin(nome);
-  const historico = await buscarHistorico(nome);
+  
+  const [skin, historico, noticias] = await Promise.all([
+    buscarSkin(nome),
+    buscarHistorico(nome),
+    buscarNoticiasRelacionadas(nome)
+  ]);
 
   if (!skin) {
-    document.querySelector('.container').innerHTML = "<h2>Skin não encontrada!</h2>";
+    document.querySelector('.main-content').innerHTML = "<h2>Skin não encontrada!</h2>";
     return;
   }
 
@@ -148,6 +184,8 @@ async function renderizarDetalhe() {
       }
     });
   }
+  
+  renderizarNoticias(noticias);
 }
 
 renderizarDetalhe();
