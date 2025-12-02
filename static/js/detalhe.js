@@ -4,23 +4,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const btnAtualizar = document.getElementById("attbutton")
-
-btnAtualizar.addEventListener("click", async () => {
-  const skinName = getSkinNome()
-  atualizarSkin(skinName)
-});
-
-async function atualizarSkin(skinName) {
-  const response = await fetch("http://localhost:5000/update", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ skin_name: skinName })
-  });
-
-  const data = await response.json();
-  console.log(data);
-}
 
 function getSkinNome() {
   const params = new URLSearchParams(window.location.search);
