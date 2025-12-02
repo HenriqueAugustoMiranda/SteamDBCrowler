@@ -4,23 +4,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const btnAtualizar = document.getElementById("attbutton")
-
-btnAtualizar.addEventListener("click", async () => {
-  const skinName = getSkinNome()
-  atualizarSkin(skinName)
-});
-
-async function atualizarSkin(skinName) {
-  const response = await fetch("http://localhost:5000/update", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ skin_name: skinName })
-  });
-
-  const data = await response.json();
-  console.log(data);
-}
 
 function getSkinNome() {
   const params = new URLSearchParams(window.location.search);
@@ -95,21 +78,29 @@ async function buscarHistorico(nome) {
 }
 
 async function buscarNoticiasRelacionadas(nome) {
-  const { data, error } = await client
-    .from("news")
-    .select("link, titulo, descricao, date")
-    .order("date", { ascending: false })
-    .limit(10); 
+  const { data, error } = await client.rpc("relacionar_news_skins", {
+    s_name: nome
+  });
 
-  console.log("Noticia:", data);
-  
   if (error) {
     console.error("Erro ao buscar notícias relacionadas:", error);
     return [];
   }
-  
-  return data || [];
+
+  if (!data || data.length === 0) return [];
+
+  return data.map(noticia => ({
+    titulo: noticia.titulo,
+    autor: noticia.autor,
+    link: noticia.link,
+    respostas: noticia.respostas,
+    descricao: noticia.descricao,
+    fonte: noticia.fonte,
+    date: noticia.date
+  }));
 }
+
+
 
 function renderizarNoticias(noticias) {
   const newsList = document.getElementById('news-list');
@@ -138,13 +129,19 @@ function renderizarNoticias(noticias) {
 }
 
 async function renderizarDetalhe() {
-  const nome = getSkinNome();
   
+  const nome = getSkinNome().trimStart();
+
   const [skin, historico, noticias] = await Promise.all([
     buscarSkin(nome),
     buscarHistorico(nome),
     buscarNoticiasRelacionadas(nome)
   ]);
+
+  console.log("Skin pesquisada:", nome);
+  const teste = await buscarNoticiasRelacionadas(nome);
+  console.log("Notícias retornadas:", teste);
+
 
   if (!skin) {
     document.querySelector('.main-content').innerHTML = "<h2>Skin não encontrada!</h2>";
