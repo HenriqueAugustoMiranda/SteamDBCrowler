@@ -195,32 +195,30 @@ h1 {
     margin-left: 15px;
 }
 
-
-
 .container {
     max-width: 850px;
-    width: 100%;
-    margin: 0;
+    width: 75%;
+    margin: 0 auto;
     
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    text-align: left; 
+    text-align: center; 
 }
 
 .main-content {
     display: flex;
     justify-content: center; /* Centraliza o bloco principal na tela */
-    max-width: 1400px; /* Limite máximo para a largura total do conteúdo */
-    margin: 40px auto; /* Centraliza o bloco main-content na tela */
-    gap: 30px; /* Espaço entre a coluna da esquerda e a da direita */
+    max-width: 2000px; /* Limite máximo para a largura total do conteúdo */
+    margin: 40px 0 40px 40px; /* Centraliza o bloco main-content na tela */
+    gap: 0; /* Espaço entre a coluna da esquerda e a da direita */
     padding: 0 20px;
 }
 
 .news-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 1000px;
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
     padding: 20px;
@@ -230,7 +228,7 @@ h1 {
 
 .news-container h2 {
     margin-top: 0;
-    text-align: center;
+    text-align: left;
     margin-bottom: 20px;
     color: var(--preto);
 }
@@ -240,7 +238,7 @@ h1 {
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
-    border-left: 5px solid var(--vermelho); /* Destaque visual */
+    border-left: 5px solid var(--vermelho);
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -249,14 +247,12 @@ h1 {
     background-color: #e0e0e0;
 }
 
-/* Título da Notícia (texto maior na parte de cima) */
 .news-item h4 {
     margin: 0 0 5px 0;
     font-size: 1.1em; 
     color: var(--preto);
 }
 
-/* Descrição da Notícia (texto menor embaixo) */
 .news-item p {
     margin: 0;
     font-size: 0.85em; 
@@ -280,7 +276,6 @@ h1 {
     height: 300px;
 }
 
-/* Fundo escurecido */
 .overlay {
     display: none; /* escondido por padrão */
     position: fixed;
@@ -292,7 +287,6 @@ h1 {
     justify-content: center;
 }
 
-/* Caixa de login */
 .modal {
     background: #313131;
     padding: 20px;

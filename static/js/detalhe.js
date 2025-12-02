@@ -95,10 +95,14 @@ async function buscarHistorico(nome) {
 }
 
 async function buscarNoticiasRelacionadas(nome) {
-  const { data, error } = await client.rpc("relacionar_news_skins", {
-    s_name: nome
-  });
+  const { data, error } = await client
+    .from("news")
+    .select("link, titulo, descricao, date")
+    .order("date", { ascending: false })
+    .limit(10); 
 
+  console.log("Noticia:", data);
+  
   if (error) {
     console.error("Erro ao buscar notícias relacionadas:", error);
     return [];
