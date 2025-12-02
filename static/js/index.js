@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   const link_inicio = "https://community.fastly.steamstatic.com/economy/image/";
-  let skinsPorPagina = 30; // valor inicial
+  let skinsPorPagina = 30;
   let paginaAtual = 1;
   let skins = [];
   let is_logged = 0;
@@ -62,20 +62,16 @@ saveFilter.addEventListener("click", async () => {
           return;
       }
       
-      // Alterna o estado do filtro
       filtroInteresseAtivo = !filtroInteresseAtivo;
       
-      // Atualiza o visual do botão/imagem
       if (filtroInteresseAtivo) {
-          // Destaca o botão quando ativo
           saveFilterIcon.style.border = "2px solid #2a8aed"; 
           saveFilterIcon.style.borderRadius = "5px";
       } else {
-          // Remove o destaque quando inativo
           saveFilterIcon.style.border = "none";
       }
 
-      renderizarSkins(1); // Renderiza na primeira página com o novo filtro aplicado
+      renderizarSkins(1);
   });
 
   bntEntrarCadastro.addEventListener("click", async () => {
@@ -202,16 +198,16 @@ saveFilter.addEventListener("click", async () => {
     return !!data;
   }
 
-  function parsePreco(precoString) {
-    if (typeof precoString === 'number') return precoString;
-    if (!precoString) return 0;
+//   function parsePreco(precoString) {
+//     if (typeof precoString === 'number') return precoString;
+//     if (!precoString) return 0;
     
-    const precoLimpo = String(precoString).replace(/[^0-9.]/g, '');
+//     const precoLimpo = String(precoString).replace(/[^0-9.]/g, '');
     
-    const preco = parseFloat(precoLimpo);
+//     const preco = parseFloat(precoLimpo);
     
-    return isNaN(preco) ? 0 : preco;
-}
+//     return isNaN(preco) ? 0 : preco;
+// }
 
   async function filtrarInteresse(email, skin_name) {
     try {
@@ -295,16 +291,16 @@ async function getSkinsInteressadas(email) {
     return todasSkins.map(skin => ({
       nome: skin.name,
       arma: skin.weapon_type,
-      preco: skin.sell_price,
+      //preco: skin.sell_price,
       img: skin.icon_url,
       raridade: skin.type
     }));
   }
 
-  function parsePreco(precoStr) {
-    if (!precoStr) return 0;
-    return Number(precoStr.replace(/[^0-9.]/g, ""));
-  }
+  // function parsePreco(precoStr) {
+  //   if (!precoStr) return 0;
+  //   return Number(precoStr.replace(/[^0-9.]/g, ""));
+  // }
 
 async function deletarInteresse(email, skin_name){
     try {
@@ -382,11 +378,11 @@ async function filtrarESortearSkins() {
         (skin.nome.toLowerCase().includes(busca))
       );
     })
-    .sort((a, b) => {
-      if (ordenar === "preco-crescente") return parsePreco(a.preco) - parsePreco(b.preco);
-      if (ordenar === "preco-decrescente") return parsePreco(b.preco) - parsePreco(a.preco);
-      return 0;
-    });
+    // .sort((a, b) => {
+    //   if (ordenar === "preco-crescente") return parsePreco(a.preco) - parsePreco(b.preco);
+    //   if (ordenar === "preco-decrescente") return parsePreco(b.preco) - parsePreco(a.preco);
+    //   return 0;
+    // });
 }
 
   async function renderizarSkins(pagina = 1) {
@@ -408,38 +404,32 @@ async function filtrarESortearSkins() {
       div.innerHTML = `
       <h3>${skin.nome}</h3>
       <img src="${img}" class="ak-img" alt="${skin.nome}">
-      <p>US$ ${skin.preco}</p>
+      
       <button class="visualizar-btn">Visualizar</button>
       <button class="save-btn"><img src="/static/assets/heart.png" class="heart-icon" alt="Salvar"></button>
     `;
+    // <p>US$ ${skin.preco}</p>
       div.querySelector('.visualizar-btn').onclick = () => {
           window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
       };
 
       div.querySelector('.save-btn').onclick = async () => {
         if(is_logged !== 1){
-          // Se não estiver logado, abre a modal de login
           loginOverlay.style.display = "flex";
           return;
         }
 
         const skinName = skin.nome;
         
-        // Verifica se a skin já está salva
         const isSaved = await filtrarInteresse(userMail, skinName);
 
         if (isSaved) {
-            // Se já está salva, remove
             await deletarInteresse(userMail, skinName);
         } else {
-            // Se não está salva, adiciona
             await interesse_em(userMail, skinName);
         }
         
-        // Se o filtro de "Skins Salvas" estiver ativo, 
-        // é crucial limpar o cache e re-renderizar para que a lista seja atualizada.
         if (filtroInteresseAtivo) {
-            // Limpa o array cache para que a próxima chamada de filtrarESortearSkins atualize
             skinsInteressadas = []; 
             renderizarSkins(paginaAtual); 
         }
