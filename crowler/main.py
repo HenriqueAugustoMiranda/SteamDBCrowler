@@ -12,7 +12,7 @@ if __name__ == "__main__":
     
     x = 3
     # cFunc.imprimir_skins_sem_historico()
-    # cFunc.inserir_precos()
+    cFunc.inserir_precos()
 
     while x != 0:
         x = int(input("Digite 2 para Atualizar e 0 para sair!\n"))
