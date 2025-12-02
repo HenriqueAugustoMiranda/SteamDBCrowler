@@ -2,6 +2,9 @@ from . import themes as t
 
 def classify_text(title: str, description: str):
     
+    title = "" if title is None else str(title)
+    description = "" if description is None else str(description)
+
     text = (title + " " + description).lower()
 
     matched = []

@@ -6,10 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let skins = [];
   let is_logged = 0;
   let userMail = null;
-  let filtroSkinsSalvasAtivo = false;
 
   const SUPABASE_URL = "https://lpfawvedzxmjoaznbnkb.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZmF3dmVkenhtam9hem5ibmtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2MDQyMTcsImV4cCI6MjA3MjE4MDIxN30.88yKkeMhvGjnKOkLQG4Y8IMxOsulKNC8QW4TYD6I7Z4";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwZmF3dmVkenhtam9hem5ibmtiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjYwNDIxNywiZXhwIjoyMDcyMTgwMjE3fQ.GdhC4Q0g9IttUki13_aCd0assoMUi3Us8p7LJxQIMTk";
   const { createClient } = supabase;
   const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -31,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnome = document.getElementById("p-nome");
   const unome = document.getElementById("u-nome");
 
-  //#reseba
   if (btnAbrirLogin && loginOverlay) {
     btnAbrirLogin.addEventListener("click", () => {
       loginOverlay.style.display = "flex";
@@ -221,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Erro na requisição:", err);
         return false;
     }
-  }
+}
 
   async function cadastrarUsuario(email, senha, pnome, unome){
     const { data, error } = await client
@@ -233,21 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } 
     return true;
   }
-  
-  // funcao para buscar as skins salvas pelo usuário
-  async function carregarSkinsDeInteresse(email) {
-      const { data, error } = await client
-        .from("interest")
-        .select("skin")
-        .eq("email", email);
 
-      if (error) {
-        console.error("Erro ao buscar skins de interesse:", error);
-        return [];
-      }
-
-      return data.map(item => item.skin);
-  }
 
 
   async function carregarTodasSkins() {
@@ -257,10 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let maisSkins = true;
 
     while (maisSkins) {
-      const { data, error } = await client
-        .from("steam_skins")
-        .select("*")
-        .range(offset, offset + batchSize - 1);
+
+      const { data, error } = await client.rpc("skins_com_preco", {
+        s_offset: offset,
+        s_limit: batchSize
+      });
 
       if (error) {
         console.error("Erro ao buscar skins:", error);
@@ -286,26 +271,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number(precoStr.replace(/[^0-9.]/g, ""));
   }
 
-  // buscar skins salvas
-  async function filtrarESortearSkins() {
+  function filtrarESortearSkins() {
 
-    const busca = document.getElementById("filtro-busca").value.toLowerCase(); // Adicionado toLowerCase()
+    const busca = document.getElementById("filtro-busca").value;
     const arma = document.getElementById("filtro-arma").value;
     const qualidade = document.getElementById("filtro-qualidade").value;
     const stattrak = document.getElementById("filtro-stattrak").value;
     const ordenar = document.getElementById("filtro-ordenar").value;
 
-    let skinsParaFiltrar = skins; // Começa com todas as skins
-
-    // logica do filtro de skins salvas
-    if (filtroSkinsSalvasAtivo && is_logged === 1) {
-        const skinsDeInteresse = await carregarSkinsDeInteresse(userMail);
-        // filtra o array principal para incluir so as skins salvas
-        skinsParaFiltrar = skinsParaFiltrar.filter(skin => skinsDeInteresse.includes(skin.nome));
-    }
-    
-    // aplica os outros filtros no array filtrado
-    return skinsParaFiltrar
+    return skins
       .filter(skin => {
         const stattrakBool = skin.stattrak === true || skin.stattrak === "true";
         return (
@@ -322,11 +296,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  async function renderizarSkins(pagina = 1) {
+  function renderizarSkins(pagina = 1) {
     const container = document.getElementById("container-skins");
     container.innerHTML = "";
 
-    const filtradas = await filtrarESortearSkins(); 
+    const filtradas = filtrarESortearSkins(); 
     const totalPaginas = Math.ceil(filtradas.length / skinsPorPagina);
     paginaAtual = Math.min(Math.max(1, pagina), totalPaginas || 1); 
 
@@ -338,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let skinsDeInteresseNomes = [];
     if (is_logged === 1) {
       // carregarSkinsDeInteresse retorna um array de nomes (strings)
-      skinsDeInteresseNomes = await carregarSkinsDeInteresse(userMail); 
+      skinsDeInteresseNomes = carregarSkinsDeInteresse(userMail); 
     }
 
     skinsPagina.forEach(skin => {
@@ -398,114 +372,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderizarPaginacao(totalPaginas);
   }
-  
-  saveFilter.addEventListener("click", async () => {
-    if (is_logged === 0) {
-      alert("Você precisa estar logado para ver suas skins salvas!");
-      loginOverlay.style.display = "flex";
-      return;
-    }
-
-    // alterna o estado do filtro
-    filtroSkinsSalvasAtivo = !filtroSkinsSalvasAtivo;
-
-    // atualiza o feedback visual do botao
-    if (filtroSkinsSalvasAtivo) {
-      // muda estilo para mostrar que esta ativo
-      saveFilter.style.backgroundColor = 'var(--vermelho)';
-      saveFilter.style.border = '2px solid var(--branco)';
-      saveFilter.style.borderRadius = '8px';
-    } else {
-      // remove estilo
-      saveFilter.style.backgroundColor = 'transparent';
-      saveFilter.style.border = 'none';
-      saveFilter.style.borderRadius = '0';
-    }
-
-    renderizarSkins(1);
-  });
-
 
   document.querySelectorAll("#filtro-busca, #filtro-arma, #filtro-qualidade, #filtro-stattrak, #filtro-ordenar")
     .forEach(el => el.addEventListener("change", () => renderizarSkins(1)));
 
   function renderizarPaginacao(totalPaginas) {
-    const pagContainer = document.getElementById("paginacao");
-    pagContainer.innerHTML = "";
+      const pagContainer = document.getElementById("paginacao");
+      pagContainer.innerHTML = "";
+      
+      const MAX_VISIBLE_BUTTONS = 3; 
+      const halfWindow = Math.floor(MAX_VISIBLE_BUTTONS / 2);
 
-    const maxBotoes = 7;
-    let startPage;
-    let endPage;
+      let startPage = Math.max(2, paginaAtual - halfWindow); 
+      let endPage = Math.min(totalPaginas - 1, paginaAtual + halfWindow);
+      
+      if (endPage - startPage + 1 < MAX_VISIBLE_BUTTONS) {
+          if (paginaAtual <= halfWindow + 1) {
+              endPage = Math.min(totalPaginas - 1, MAX_VISIBLE_BUTTONS + 1);
+          } else if (paginaAtual >= totalPaginas - halfWindow) {
+              startPage = Math.max(2, totalPaginas - MAX_VISIBLE_BUTTONS);
+          }
+      }
 
-    if (totalPaginas <= maxBotoes) {
-        // exibe todos os botoes se o total for menor ou igual ao limite
-        startPage = 1;
-        endPage = totalPaginas;
-    } else {
-        const maxPaginasEsquerda = Math.floor(maxBotoes / 2);
-        const maxPaginasDireita = Math.ceil(maxBotoes / 2) - 1;
-
-        if (paginaAtual <= maxPaginasEsquerda) {
-            // se estiver perto do inicio, fixa o inicio em 1
-            startPage = 1;
-            endPage = maxBotoes;
-        } else if (paginaAtual + maxPaginasDireita >= totalPaginas) {
-            // se estiver perto do fim, fixa o fim no totalPaginas
-            startPage = totalPaginas - maxBotoes + 1;
-            endPage = totalPaginas;
-        } else {
-            // senao, centraliza a pagina atual
-            startPage = paginaAtual - maxPaginasEsquerda + 1;
-            endPage = paginaAtual + maxPaginasDireita;
-        }
-    }
-
-    const btnPrimeira = document.createElement("button");
-    btnPrimeira.innerText = "« First";
-    btnPrimeira.title = "Primeira Página";
-    btnPrimeira.disabled = paginaAtual === 1;
-    btnPrimeira.onclick = () => renderizarSkins(1); // vai para a primeira pagina
-    pagContainer.appendChild(btnPrimeira);
-
-    const btnAnterior = document.createElement("button"); // botao anterior
-    btnAnterior.innerText = "«";
-    btnAnterior.disabled = paginaAtual === 1; // desativa se estiver na primeira pagina
-    btnAnterior.onclick = () => {
-        if (paginaAtual > 1) {
-            renderizarSkins(paginaAtual - 1);
-        }
-    };
-    pagContainer.appendChild(btnAnterior);
-
-    for (let i = startPage; i <= endPage; i++) {
-        const btn = document.createElement("button");
-        btn.innerText = i;
-        btn.className = "numero-pagina";
-        btn.onclick = () => renderizarSkins(i);
-        
-        if (i === paginaAtual) {
-            btn.classList.add("active");
-        }
-        pagContainer.appendChild(btn);
-    }
-
-    const btnProximo = document.createElement("button"); // botao proximo
-    btnProximo.innerText = "»";
-    btnProximo.disabled = paginaAtual === totalPaginas || totalPaginas === 0; // desativa se estiver na ultima página
-    btnProximo.onclick = () => {
-        if (paginaAtual < totalPaginas) {
-            renderizarSkins(paginaAtual + 1);
-        }
+      const createButton = (text, pageNumber) => {
+          const btn = document.createElement("button");
+          btn.innerText = text;
+          btn.onclick = () => renderizarSkins(pageNumber);
+          if (pageNumber === paginaAtual) {
+              btn.className = "active-page"; 
+              btn.disabled = true; 
+          }
+          pagContainer.appendChild(btn);
       };
-      pagContainer.appendChild(btnProximo);
+      
+      const addDots = () => {
+          const dots = document.createElement("span");
+          dots.innerText = "...";
+          dots.className = "pagination-separator";
+          pagContainer.appendChild(dots);
+      };
+      
+      if (paginaAtual > 1) {
+          createButton("<", paginaAtual - 1);
+      }
 
-    const btnUltima = document.createElement("button");
-    btnUltima.innerText = "Last »";
-    btnUltima.title = "Última Página";
-    btnUltima.disabled = paginaAtual === totalPaginas || totalPaginas === 0;
-    btnUltima.onclick = () => renderizarSkins(totalPaginas); // vai para a ultima pagina
-    pagContainer.appendChild(btnUltima);
+      createButton("1", 1);
+
+      if (startPage > 2) { 
+          addDots();
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+          createButton(i.toString(), i);
+      }
+      
+      if (endPage < totalPaginas - 1) { 
+          addDots();
+      }
+
+      if (totalPaginas > 1) { 
+          createButton(totalPaginas.toString(), totalPaginas); 
+      }
+      
+      if (paginaAtual < totalPaginas) {
+          createButton(">", paginaAtual + 1);
+      }
+      
+      const inputDiv = document.createElement("div");
+      inputDiv.className = "manual-page-input";
+      inputDiv.innerHTML = `
+          <input type="number" id="page-input" min="1" max="${totalPaginas}" placeholder="${paginaAtual}">
+          <button id="go-to-page-btn">Ir</button>
+      `;
+
+      pagContainer.appendChild(inputDiv);
+      
+      const pageInput = document.getElementById("page-input");
+      const goToPageBtn = document.getElementById("go-to-page-btn");
+
+      const navigateToPage = () => {
+          let pageToGo = Number(pageInput.value);
+          
+          if (pageToGo >= 1 && pageToGo <= totalPaginas) {
+              renderizarSkins(pageToGo);
+              pageInput.value = '';
+          } else {
+              alert(`Por favor, insira um número entre 1 e ${totalPaginas}.`);
+              pageInput.value = ''; 
+          }
+      };
+      
+      goToPageBtn.addEventListener("click", navigateToPage);
+      
+      pageInput.addEventListener("keypress", (event) => {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+              event.preventDefault();
+              navigateToPage();
+          }
+      });    
   }
+
 
   async function iniciar() {
     loginOverlay.style.display = "none";
@@ -516,5 +482,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   iniciar();
+
 
 });

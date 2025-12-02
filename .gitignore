@@ -14,3 +14,4 @@ __pycache__/
 saida.txt
 saida_utils.txt
 teste/
+*.bat
