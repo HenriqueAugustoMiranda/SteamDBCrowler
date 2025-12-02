@@ -95,11 +95,11 @@ async function buscarHistorico(nome) {
 }
 
 async function buscarNoticiasRelacionadas(nome) {
+
   const { data, error } = await client
-    .from("news")
-    .select("link, titulo, descricao, date")
-    .order("date", { ascending: false })
-    .limit(10); 
+    .rpc("relacionar_news_skins", {
+      s_name: nome
+    }) 
 
   console.log("Noticia:", data);
   
@@ -138,13 +138,19 @@ function renderizarNoticias(noticias) {
 }
 
 async function renderizarDetalhe() {
-  const nome = getSkinNome();
   
+  const nome = getSkinNome().trimStart();
+
   const [skin, historico, noticias] = await Promise.all([
     buscarSkin(nome),
     buscarHistorico(nome),
     buscarNoticiasRelacionadas(nome)
   ]);
+
+  console.log("Skin pesquisada:", nome);
+  const teste = await buscarNoticiasRelacionadas(nome);
+  console.log("Notícias retornadas:", teste);
+
 
   if (!skin) {
     document.querySelector('.main-content').innerHTML = "<h2>Skin não encontrada!</h2>";
