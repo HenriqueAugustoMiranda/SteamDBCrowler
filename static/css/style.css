@@ -198,8 +198,8 @@ h1 {
 
 
 .container {
-    max-width: 600px;
-    margin: 40px auto;
+    max-width: 850px;
+    margin: 40px 0 40px 40px;
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
     padding: 30px;

@@ -27,28 +27,40 @@ function getSkinNome() {
   return params.get('nome');
 }
 
-
 async function buscarSkin(nome) {
-  const { data, error } = await client
+  const { data: skinData, error: skinError } = await client
     .from("steam_skins")
-    .select("*")
+    .select("name, weapon_type, icon_url")
     .eq("name", nome)
     .single();
 
-  if (error) {
-    console.error("Erro ao buscar skin:", error);
+  if (skinError) {
+    console.error("Erro ao buscar detalhes da skin:", skinError);
     return null;
   }
 
-  return data
-    ? {
-      nome: data.name,
-      arma: data.weapon_type,
-      preco: data.sell_price,
-      menor_preco: data.sale_price_text,
-      img: data.icon_url
-    }
-    : null;
+  const { data: precoData, error: precoError } = await client.rpc("ultimopreco", {
+    s_name: nome
+  });
+
+  const { data: precoDataMenor, error: precoErrorMenor } = await client.rpc("menorpreco", {
+    s_name: nome
+  });
+
+  console.log("preço retornado pela RPC:", precoData);
+  if (precoError) {
+    console.warn("Aviso: Erro ao buscar preço via RPC. Usando N/A.", precoError);
+  }
+
+  // const precoInfo = precoData && precoData.length > 0 ? precoData[0] : {}; 
+
+  return {
+    nome: skinData.name,
+    arma: skinData.weapon_type,
+    img: skinData.icon_url,
+    preco: precoData || 'undefined',
+    menor_preco: precoDataMenor || 'undefined'
+  };
 }
 
 async function buscarHistorico(nome) {
@@ -65,12 +77,28 @@ async function buscarHistorico(nome) {
 
   return data
     .map(h => {
-      const preco = Number(h.sell_price.replace('$', '')); // converte para número
-      const menor_preco = Number(h.sell_price.replace('$', ''));
+      // 1. VERIFICAÇÃO PARA EVITAR O TYPEERROR (Linha 68 original)
+      let precoNum = 0;
+      let menorPrecoNum = 0;
+      
+      if (typeof h.sell_price === 'string') {
+          // Garante que é uma string antes de chamar replace()
+          const precoLimpo = h.sell_price.replace('$', '');
+          precoNum = Number(precoLimpo);
+          menorPrecoNum = Number(precoLimpo); // Assumindo que menor_preco é o mesmo valor aqui, como no seu código original
+      } else if (typeof h.sell_price === 'number') {
+          // Se for um número, usa o valor diretamente
+          precoNum = h.sell_price;
+          menorPrecoNum = h.sell_price;
+      }
+      
       const dataObj = h.date ? new Date(h.date) : null;
-      return { preco, menor_preco, data: dataObj };
+      
+      // 2. CORREÇÃO DO REFERENCE ERROR (mudando o nome da propriedade para 'dateObj')
+      return { preco: precoNum, menor_preco: menorPrecoNum, dateObj: dataObj };
     })
-    .filter(h => !isNaN(h.preco) && h.data !== null);
+    // 3. ATUALIZAÇÃO DO FILTER COM O NOME CORRETO DA PROPRIEDADE
+    .filter(h => !isNaN(h.preco) && h.dateObj !== null); 
 }
 
 async function renderizarDetalhe() {
@@ -97,7 +125,7 @@ async function renderizarDetalhe() {
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: historico.map(h => h.data.toISOString().split('T')[0]),
+        labels: historico.map(h => h.dateObj.toISOString().split('T')[0]),
         datasets: [{
           label: 'Preço (US$)',
           data: historico.map(h => h.preco),
@@ -105,6 +133,7 @@ async function renderizarDetalhe() {
           backgroundColor: 'rgba(40,167,69,0.1)',
           fill: true,
           tension: 0.2,
+          borderWidth: 0.6,
 
           pointRadius: 0,
           pointHoverRadius: 6,
