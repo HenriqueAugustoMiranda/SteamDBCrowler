@@ -95,21 +95,29 @@ async function buscarHistorico(nome) {
 }
 
 async function buscarNoticiasRelacionadas(nome) {
+  const { data, error } = await client.rpc("relacionar_news_skins", {
+    s_name: nome
+  });
 
-  const { data, error } = await client
-    .rpc("relacionar_news_skins", {
-      s_name: nome
-    }) 
-
-  console.log("Noticia:", data);
-  
   if (error) {
     console.error("Erro ao buscar notícias relacionadas:", error);
     return [];
   }
-  
-  return data || [];
+
+  if (!data || data.length === 0) return [];
+
+  return data.map(noticia => ({
+    titulo: noticia.titulo,
+    autor: noticia.autor,
+    link: noticia.link,
+    respostas: noticia.respostas,
+    descricao: noticia.descricao,
+    fonte: noticia.fonte,
+    date: noticia.date
+  }));
 }
+
+
 
 function renderizarNoticias(noticias) {
   const newsList = document.getElementById('news-list');
