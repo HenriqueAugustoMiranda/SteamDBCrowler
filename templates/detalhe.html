@@ -20,27 +20,31 @@
       <button class="voltar-btn" id="btn-limpar-data">Limpar Data</button>
     </div>
 
-    <!-- ABAS -->
-    <div class="tabs-container">
-      <button id="aba-noticias" class="active">Notícias</button>
-      <button id="aba-discuss">Discussões</button>
+    <div class="conteiner-aba">
+
+      <!-- ABAS -->
+      <div class="abas">
+        <h2 id="aba-noticias" class="aba-btn active">Notícias Relacionadas</h2>
+        <h2 id="aba-discuss" class="aba-btn">Discussões Relacionadas</h2>
+      </div>
+
+      <!-- CONTEÚDO NOTÍCIAS -->
+      <div id="news-box" class="tab-content">
+        <div id="news-list">
+          <p>Carregando notícias...</p>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO DISCUSSÕES -->
+      <div id="discussion-box" class="tab-content" style="display:none">
+        <div id="discussion-list">
+          <p>Carregando discussões...</p>
+        </div>
+      </div>
+
     </div>
 
-    <!-- CONTEÚDO DA ABA DE NOTÍCIAS -->
-    <div id="news-box" class="tab-content">
-      <h2>Notícias Relacionadas</h2>
-      <div id="news-list">
-        <p>Carregando notícias...</p>
-      </div>
-    </div>
 
-    <!-- CONTEÚDO DA ABA DE DISCUSSÕES (ESCONDIDA INICIALMENTE) -->
-    <div id="discussion-box" class="tab-content">
-      <h2>Discussões Relacionadas</h2>
-      <div id="discussion-list">
-        <p>Carregando discussões...</p>
-      </div>
-    </div>
 
   </div>
 
