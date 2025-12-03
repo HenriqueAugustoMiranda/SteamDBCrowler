@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Notícias CS:GO</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="/static/assets/icon.png">
+</head>
+<body>
+
+  <h1><img src="/static/assets/skinsviewer.png" class="header-img" style="cursor:pointer;" onclick="window.location.href='/'"></h1>
+  <h2 style="text-align: center; color: var(--branco);">Central de Notícias</h2>
+
+  <div class="filtros">
+    <!-- Busca por Título -->
+    <div class="input-container" style="width: 25%;">
+      <input type="text" id="news-search" placeholder="Buscar no título...">
+      <img src="/static/assets/search.png" id="icone-busca-news" alt="buscar" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 20px; cursor: pointer;">
+    </div>
+
+    <!-- Filtro de Tema -->
+    <select id="news-theme-filter" style="width: 20%;">
+      <option value="">Todos os Temas</option>
+      <!-- Opções carregadas via JS -->
+    </select>
+
+    <!-- Filtro de Data -->
+    <input type="date" id="news-date-filter" style="width: auto;">
+    
+    <button id="btn-limpar-filtros" class="voltar-btn" style="margin-top: 0; height: 54px;">Limpar</button>
+  </div>
+
+  <div class="conteudo news-page-layout">
+    
+    <!-- Coluna Esquerda: Lista de Notícias -->
+    <div class="news-list-container">
+      <div id="loading-msg">Carregando notícias...</div>
+      <div id="news-feed"></div>
+      
+      <div id="paginacao" style="margin-top: 20px;">
+        <button id="prev-page">&lt;</button>
+        <span id="page-info" style="color: var(--preto); font-weight: bold; margin: 0 10px;">Página 1</span>
+        <button id="next-page">&gt;</button>
+      </div>
+    </div>
+
+    <!-- Coluna Direita: Resumo do Dia (Aparece ao selecionar data) -->
+    <div class="day-stats-container" id="day-stats-panel" style="display: none;">
+      <h3 style="color: var(--vermelho); margin-top: 0;">Resumo do Dia <span id="stats-date"></span></h3>
+      
+      <div class="stat-box">
+        <h4>Resumo Geral</h4>
+        <p id="stats-resumo">...</p>
+      </div>
+
+      <div class="stat-box">
+        <h4>Sentimento</h4>
+        <p id="stats-sentimento" style="font-weight: bold;">...</p>
+      </div>
+
+      <div class="stat-box">
+        <h4>Palavras-Chave</h4>
+        <ul id="stats-keywords" class="keywords-list">
+          <!-- preenchido via JS -->
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="voltar-btn" onclick="window.location.href='/'" style="margin: 20px; display: block; margin-left: auto; margin-right: auto;">Voltar ao Início</button>
+
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script type="module" src="/static/js/noticias.js"></script>
+</body>
+</html>

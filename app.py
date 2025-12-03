@@ -22,6 +22,10 @@ def detalhes():
     skin_nome = request.args.get("nome")
     return render_template("detalhe.html", skin_nome=skin_nome)
 
+@app.route("/noticias")
+def noticias():
+    return render_template("noticias.html")
+
 @app.route("/update", methods=["POST"])
 def update():
     data = request.get_json()
