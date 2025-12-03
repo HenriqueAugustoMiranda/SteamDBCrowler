@@ -169,12 +169,12 @@ function configurarAbas() {
 
   if (abaNoticias) abaNoticias.addEventListener("click", () => {
     ativarNoticias();
-    boxNoticias?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // boxNoticias?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   if (abaDiscuss) abaDiscuss.addEventListener("click", () => {
     ativarDiscuss();
-    boxDiscuss?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // boxDiscuss?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   return { ativarNoticias, ativarDiscuss };
