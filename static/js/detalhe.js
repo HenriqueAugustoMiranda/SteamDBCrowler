@@ -69,7 +69,7 @@ async function buscarNoticiasRelacionadasDia(nome) {
 }
 
 async function buscarDiscussoesRelacionadasDia(nome) {
-  const { data } = await client.rpc("discussions_skins_date_gap", { s_name: nome, target_date: DateGraph });
+  const { data } = await client.rpc("discussion_skins_date_gap", { s_name: nome, target_date: DateGraph });
   return data || [];
 }
 
