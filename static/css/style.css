@@ -6,6 +6,7 @@
   --sombra: #f5f5f55c;
   --branco: #EDEDED; 
   --preto: black;
+  --azul:  rgb(30, 33, 198);
 }
 
 body {
@@ -304,3 +305,64 @@ h1 {
     border-radius: 5px;
 }
 
+.tabs button.active {
+  background: white;
+  border-bottom: 2px solid white;
+  font-weight: bold;
+}
+
+.tab-content {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.discussion-container {
+    width: 100%;
+    max-width: 850px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    text-align: left; 
+}
+
+.discussion-item {
+    background-color: var(--background);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 5px solid var(--azul); 
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.discussion-item:hover {
+    background-color: #e0e0e0;
+}
+
+.discussion-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em; 
+    color: var(--preto);
+}
+
+.discussion-item p {
+    margin: 0;
+    font-size: 0.85em; 
+    color: var(--cinza);
+}
+
+.clickable-title {
+  cursor: pointer;
+  user-select: none;
+  transition: 0.2s;
+}
+
+.clickable-title.active {
+  color: #222;
+  background: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+}

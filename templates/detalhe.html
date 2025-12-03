@@ -10,21 +10,38 @@
 
 <body>
   <div class="main-content">
-    
+
     <div class="container">
       <h2 id="skin-nome"></h2>
       <img id="skin-img" class="skin-img" src="" alt="">
       <div class="info" id="skin-info"></div>
       <canvas id="grafico"></canvas>
       <button class="voltar-btn" onclick="window.history.back()">Voltar</button>
+      <button class="voltar-btn" id="btn-limpar-data">Limpar Data</button>
     </div>
 
-    <div id="news-container" class="news-container">
+    <!-- ABAS -->
+    <div class="tabs-container">
+      <button id="aba-noticias" class="active">Notícias</button>
+      <button id="aba-discuss">Discussões</button>
+    </div>
+
+    <!-- CONTEÚDO DA ABA DE NOTÍCIAS -->
+    <div id="news-box" class="tab-content">
       <h2>Notícias Relacionadas</h2>
       <div id="news-list">
         <p>Carregando notícias...</p>
       </div>
     </div>
+
+    <!-- CONTEÚDO DA ABA DE DISCUSSÕES (ESCONDIDA INICIALMENTE) -->
+    <div id="discussion-box" class="tab-content">
+      <h2>Discussões Relacionadas</h2>
+      <div id="discussion-list">
+        <p>Carregando discussões...</p>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

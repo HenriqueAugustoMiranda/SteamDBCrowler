@@ -56,26 +56,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-saveFilter.addEventListener("click", async () => {
-      if (is_logged === 0) {
-          loginOverlay.style.display = "flex";
-          return;
-      }
-      
-      filtroInteresseAtivo = !filtroInteresseAtivo;
-      
-      if (filtroInteresseAtivo) {
-          saveFilterIcon.style.border = "2px solid #2a8aed"; 
-          saveFilterIcon.style.borderRadius = "5px";
-      } else {
-          saveFilterIcon.style.border = "none";
-      }
+  saveFilter.addEventListener("click", async () => {
+    if (is_logged === 0) {
+      loginOverlay.style.display = "flex";
+      return;
+    }
 
-      renderizarSkins(1);
+    filtroInteresseAtivo = !filtroInteresseAtivo;
+
+    if (filtroInteresseAtivo) {
+      saveFilterIcon.style.border = "2px solid #2a8aed";
+      saveFilterIcon.style.borderRadius = "5px";
+    } else {
+      saveFilterIcon.style.border = "none";
+    }
+
+    renderizarSkins(1);
   });
 
   bntEntrarCadastro.addEventListener("click", async () => {
-    
+
     if (!inputEmailCadastro.value || !inputSenhaCadastro.value || !pnome.value || !unome.value) {
       alert("Preencha todos os campos antes de entrar!");
       return;
@@ -108,7 +108,7 @@ saveFilter.addEventListener("click", async () => {
   });
 
   bntEntrarLogin.addEventListener("click", async () => {
-    
+
     if (!inputEmailLogin.value || !inputSenhaLogin.value) {
       alert("Preencha todos os campos antes de entrar!");
       return;
@@ -134,27 +134,27 @@ saveFilter.addEventListener("click", async () => {
     btnAbrirCadastro.style.display = "none";
   });
 
-  async function interesse_em(email, skin_name){
-    
+  async function interesse_em(email, skin_name) {
+
     try {
       const { data, error } = await client
         .from("interest")
-        .insert([{ 
-          email: email, 
-          skin: skin_name 
+        .insert([{
+          email: email,
+          skin: skin_name
         }])
         .select();
-      
+
       if (error) {
         console.error("Erro detalhado:", error);
-        
+
         // Se for erro de coluna inexistente
         if (error.message.includes('column') && error.message.includes('does not exist')) {
           alert("Erro de configuração do banco. Contate o administrador.");
         }
         return false;
       }
-      
+
       alert("Skin salva com sucesso!");
       return true;
     } catch (err) {
@@ -175,11 +175,11 @@ saveFilter.addEventListener("click", async () => {
       .from("users")
       .select("password")
       .eq("email", email)
-      .single();  
+      .single();
     if (error) {
       console.error("Erro ao verificar login:", error);
       return false;
-    } 
+    }
     return data.password === senha;
   }
 
@@ -198,73 +198,73 @@ saveFilter.addEventListener("click", async () => {
     return !!data;
   }
 
-//   function parsePreco(precoString) {
-//     if (typeof precoString === 'number') return precoString;
-//     if (!precoString) return 0;
-    
-//     const precoLimpo = String(precoString).replace(/[^0-9.]/g, '');
-    
-//     const preco = parseFloat(precoLimpo);
-    
-//     return isNaN(preco) ? 0 : preco;
-// }
+  //   function parsePreco(precoString) {
+  //     if (typeof precoString === 'number') return precoString;
+  //     if (!precoString) return 0;
+
+  //     const precoLimpo = String(precoString).replace(/[^0-9.]/g, '');
+
+  //     const preco = parseFloat(precoLimpo);
+
+  //     return isNaN(preco) ? 0 : preco;
+  // }
 
   async function filtrarInteresse(email, skin_name) {
     try {
-        const { data, error } = await client
-            .from("interest")
-            .select("*")
-            .eq("email", email)
-            .eq("skin", skin_name);
-        
-        if (error) {
-            console.error("Erro ao verificar interesse:", error);
-            return false;
-        }
-        
-        return data && data.length > 0;
-        
-    } catch (err) {
-        console.error("Erro na requisição:", err);
-        return false;
-    }
-}
+      const { data, error } = await client
+        .from("interest")
+        .select("*")
+        .eq("email", email)
+        .eq("skin", skin_name);
 
-async function getSkinsInteressadas(email) {
-      try {
-          const { data, error } = await client
-              .from("interest")
-              .select("skin")
-              .eq("email", email);
-          
-          if (error) {
-              console.error("Erro ao buscar interesses do usuário:", error);
-              return [];
-          }
-          
-          // Retorna apenas um array com os nomes das skins
-          return data.map(item => item.skin);
-          
-      } catch (err) {
-          console.error("Erro na requisição para obter interesses:", err);
-          return [];
+      if (error) {
+        console.error("Erro ao verificar interesse:", error);
+        return false;
       }
+
+      return data && data.length > 0;
+
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      return false;
+    }
   }
 
-  async function cadastrarUsuario(email, senha, pnome, unome){
+  async function getSkinsInteressadas(email) {
+    try {
+      const { data, error } = await client
+        .from("interest")
+        .select("skin")
+        .eq("email", email);
+
+      if (error) {
+        console.error("Erro ao buscar interesses do usuário:", error);
+        return [];
+      }
+
+      // Retorna apenas um array com os nomes das skins
+      return data.map(item => item.skin);
+
+    } catch (err) {
+      console.error("Erro na requisição para obter interesses:", err);
+      return [];
+    }
+  }
+
+  async function cadastrarUsuario(email, senha, pnome, unome) {
     const { data, error } = await client
       .from("users")
-      .insert([{ email: email, password: senha, ft_name: pnome, lt_name: unome }]); 
+      .insert([{ email: email, password: senha, ft_name: pnome, lt_name: unome }]);
     if (error) {
       console.error("Erro ao cadastrar usuário:", error);
       return false;
-    } 
+    }
     return true;
   }
 
 
 
-  async function carregarTodasSkins() { 
+  async function carregarTodasSkins() {
     const todasSkins = [];
     const batchSize = 1000;
     let offset = 0;
@@ -302,19 +302,19 @@ async function getSkinsInteressadas(email) {
   //   return Number(precoStr.replace(/[^0-9.]/g, ""));
   // }
 
-async function deletarInteresse(email, skin_name){
+  async function deletarInteresse(email, skin_name) {
     try {
       const { error } = await client
         .from("interest")
         .delete()
         .eq("email", email)
         .eq("skin", skin_name);
-      
+
       if (error) {
         console.error("Erro ao deletar interesse:", error);
         return false;
       }
-      
+
       alert("Skin removida dos seus interesses!");
       return true;
     } catch (err) {
@@ -323,67 +323,67 @@ async function deletarInteresse(email, skin_name){
     }
   }
 
-let skinsInteressadas = [];
+  let skinsInteressadas = [];
 
-async function filtrarESortearSkins() {
+  async function filtrarESortearSkins() {
 
-  const busca = document.getElementById("filtro-busca").value.toLowerCase();
-  const arma = document.getElementById("filtro-arma").value;
-  const qualidade = document.getElementById("filtro-qualidade").value;
-  const stattrak = document.getElementById("filtro-stattrak").value;
-  const ordenar = document.getElementById("filtro-ordenar").value;
+    const busca = document.getElementById("filtro-busca").value.toLowerCase();
+    const arma = document.getElementById("filtro-arma").value;
+    const qualidade = document.getElementById("filtro-qualidade").value;
+    const stattrak = document.getElementById("filtro-stattrak").value;
+    const ordenar = document.getElementById("filtro-ordenar").value;
 
-  let skinsParaFiltrar = skins;
+    let skinsParaFiltrar = skins;
 
-  if (filtroInteresseAtivo) {
+    if (filtroInteresseAtivo) {
       if (skinsInteressadas.length === 0) {
-         skinsInteressadas = await getSkinsInteressadas(userMail);
+        skinsInteressadas = await getSkinsInteressadas(userMail);
       }
-      
-      skinsParaFiltrar = skinsParaFiltrar.filter(skin => 
-          skinsInteressadas.includes(skin.nome)
-      );
-  } else {
-      skinsInteressadas = [];
-  }
 
-  return skinsParaFiltrar
-    .filter(skin => {
-      const nomeLimpo = skin.nome.trim();
-      
-      const isStatTrakSkin = nomeLimpo.startsWith("StatTrak") || nomeLimpo.startsWith("★ StatTrak");
-      
-      const stattrakFilterCondition = 
-        stattrak === "" ||
-        (stattrak === "true" && isStatTrakSkin) ||
-        (stattrak === "false" && !isStatTrakSkin);
-        
-      let qualidadeMatch = true; 
-      
-      if (qualidade !== "") {
+      skinsParaFiltrar = skinsParaFiltrar.filter(skin =>
+        skinsInteressadas.includes(skin.nome)
+      );
+    } else {
+      skinsInteressadas = [];
+    }
+
+    return skinsParaFiltrar
+      .filter(skin => {
+        const nomeLimpo = skin.nome.trim();
+
+        const isStatTrakSkin = nomeLimpo.startsWith("StatTrak") || nomeLimpo.startsWith("★ StatTrak");
+
+        const stattrakFilterCondition =
+          stattrak === "" ||
+          (stattrak === "true" && isStatTrakSkin) ||
+          (stattrak === "false" && !isStatTrakSkin);
+
+        let qualidadeMatch = true;
+
+        if (qualidade !== "") {
           const raridadeDaSkin = skin.raridade ? skin.raridade.toLowerCase() : "";
           const filtroNormalizado = qualidade.toLowerCase();
 
           if (filtroNormalizado === "covert") {
-              qualidadeMatch = raridadeDaSkin.includes("covert") || raridadeDaSkin.includes("extraordinary");
+            qualidadeMatch = raridadeDaSkin.includes("covert") || raridadeDaSkin.includes("extraordinary");
           } else {
-              qualidadeMatch = raridadeDaSkin.includes(filtroNormalizado);
+            qualidadeMatch = raridadeDaSkin.includes(filtroNormalizado);
           }
-      }
-        
-      return (
-        (arma === "" || skin.arma === arma) &&
-        qualidadeMatch &&
-        stattrakFilterCondition && 
-        (skin.nome.toLowerCase().includes(busca))
-      );
-    })
+        }
+
+        return (
+          (arma === "" || skin.arma === arma) &&
+          qualidadeMatch &&
+          stattrakFilterCondition &&
+          (skin.nome.toLowerCase().includes(busca))
+        );
+      })
     // .sort((a, b) => {
     //   if (ordenar === "preco-crescente") return parsePreco(a.preco) - parsePreco(b.preco);
     //   if (ordenar === "preco-decrescente") return parsePreco(b.preco) - parsePreco(a.preco);
     //   return 0;
     // });
-}
+  }
 
   async function renderizarSkins(pagina = 1) {
     const container = document.getElementById("container-skins");
@@ -408,30 +408,30 @@ async function filtrarESortearSkins() {
       <button class="visualizar-btn">Visualizar</button>
       <button class="save-btn"><img src="/static/assets/heart.png" class="heart-icon" alt="Salvar"></button>
     `;
-    // <p>US$ ${skin.preco}</p>
+      // <p>US$ ${skin.preco}</p>
       div.querySelector('.visualizar-btn').onclick = () => {
-          window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
+        window.location.href = `/detalhes?nome=${encodeURIComponent(skin.nome)}`;
       };
 
       div.querySelector('.save-btn').onclick = async () => {
-        if(is_logged !== 1){
+        if (is_logged !== 1) {
           loginOverlay.style.display = "flex";
           return;
         }
 
         const skinName = skin.nome;
-        
+
         const isSaved = await filtrarInteresse(userMail, skinName);
 
         if (isSaved) {
-            await deletarInteresse(userMail, skinName);
+          await deletarInteresse(userMail, skinName);
         } else {
-            await interesse_em(userMail, skinName);
+          await interesse_em(userMail, skinName);
         }
-        
+
         if (filtroInteresseAtivo) {
-            skinsInteressadas = []; 
-            renderizarSkins(paginaAtual); 
+          skinsInteressadas = [];
+          renderizarSkins(paginaAtual);
         }
       };
 
@@ -445,99 +445,99 @@ async function filtrarESortearSkins() {
     .forEach(el => el.addEventListener("change", () => renderizarSkins(1)));
 
   function renderizarPaginacao(totalPaginas) {
-      const pagContainer = document.getElementById("paginacao");
-      pagContainer.innerHTML = "";
-      
-      const MAX_VISIBLE_BUTTONS = 3; 
-      const halfWindow = Math.floor(MAX_VISIBLE_BUTTONS / 2);
+    const pagContainer = document.getElementById("paginacao");
+    pagContainer.innerHTML = "";
 
-      let startPage = Math.max(2, paginaAtual - halfWindow); 
-      let endPage = Math.min(totalPaginas - 1, paginaAtual + halfWindow);
-      
-      if (endPage - startPage + 1 < MAX_VISIBLE_BUTTONS) {
-          if (paginaAtual <= halfWindow + 1) {
-              endPage = Math.min(totalPaginas - 1, MAX_VISIBLE_BUTTONS + 1);
-          } else if (paginaAtual >= totalPaginas - halfWindow) {
-              startPage = Math.max(2, totalPaginas - MAX_VISIBLE_BUTTONS);
-          }
-      }
+    const MAX_VISIBLE_BUTTONS = 3;
+    const halfWindow = Math.floor(MAX_VISIBLE_BUTTONS / 2);
 
-      const createButton = (text, pageNumber) => {
-          const btn = document.createElement("button");
-          btn.innerText = text;
-          btn.onclick = () => renderizarSkins(pageNumber);
-          if (pageNumber === paginaAtual) {
-              btn.className = "active-page"; 
-              btn.disabled = true; 
-          }
-          pagContainer.appendChild(btn);
-      };
-      
-      const addDots = () => {
-          const dots = document.createElement("span");
-          dots.innerText = "...";
-          dots.className = "pagination-separator";
-          pagContainer.appendChild(dots);
-      };
-      
-      if (paginaAtual > 1) {
-          createButton("<", paginaAtual - 1);
-      }
+    let startPage = Math.max(2, paginaAtual - halfWindow);
+    let endPage = Math.min(totalPaginas - 1, paginaAtual + halfWindow);
 
-      createButton("1", 1);
+    if (endPage - startPage + 1 < MAX_VISIBLE_BUTTONS) {
+      if (paginaAtual <= halfWindow + 1) {
+        endPage = Math.min(totalPaginas - 1, MAX_VISIBLE_BUTTONS + 1);
+      } else if (paginaAtual >= totalPaginas - halfWindow) {
+        startPage = Math.max(2, totalPaginas - MAX_VISIBLE_BUTTONS);
+      }
+    }
 
-      if (startPage > 2) { 
-          addDots();
+    const createButton = (text, pageNumber) => {
+      const btn = document.createElement("button");
+      btn.innerText = text;
+      btn.onclick = () => renderizarSkins(pageNumber);
+      if (pageNumber === paginaAtual) {
+        btn.className = "active-page";
+        btn.disabled = true;
       }
+      pagContainer.appendChild(btn);
+    };
 
-      for (let i = startPage; i <= endPage; i++) {
-          createButton(i.toString(), i);
-      }
-      
-      if (endPage < totalPaginas - 1) { 
-          addDots();
-      }
+    const addDots = () => {
+      const dots = document.createElement("span");
+      dots.innerText = "...";
+      dots.className = "pagination-separator";
+      pagContainer.appendChild(dots);
+    };
 
-      if (totalPaginas > 1) { 
-          createButton(totalPaginas.toString(), totalPaginas); 
-      }
-      
-      if (paginaAtual < totalPaginas) {
-          createButton(">", paginaAtual + 1);
-      }
-      
-      const inputDiv = document.createElement("div");
-      inputDiv.className = "manual-page-input";
-      inputDiv.innerHTML = `
+    if (paginaAtual > 1) {
+      createButton("<", paginaAtual - 1);
+    }
+
+    createButton("1", 1);
+
+    if (startPage > 2) {
+      addDots();
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      createButton(i.toString(), i);
+    }
+
+    if (endPage < totalPaginas - 1) {
+      addDots();
+    }
+
+    if (totalPaginas > 1) {
+      createButton(totalPaginas.toString(), totalPaginas);
+    }
+
+    if (paginaAtual < totalPaginas) {
+      createButton(">", paginaAtual + 1);
+    }
+
+    const inputDiv = document.createElement("div");
+    inputDiv.className = "manual-page-input";
+    inputDiv.innerHTML = `
           <input type="number" id="page-input" min="1" max="${totalPaginas}" placeholder="${paginaAtual}">
           <button id="go-to-page-btn">Ir</button>
       `;
 
-      pagContainer.appendChild(inputDiv);
-      
-      const pageInput = document.getElementById("page-input");
-      const goToPageBtn = document.getElementById("go-to-page-btn");
+    pagContainer.appendChild(inputDiv);
 
-      const navigateToPage = () => {
-          let pageToGo = Number(pageInput.value);
-          
-          if (pageToGo >= 1 && pageToGo <= totalPaginas) {
-              renderizarSkins(pageToGo);
-              pageInput.value = '';
-          } else {
-              alert(`Por favor, insira um número entre 1 e ${totalPaginas}.`);
-              pageInput.value = ''; 
-          }
-      };
-      
-      goToPageBtn.addEventListener("click", navigateToPage);
-      
-      pageInput.addEventListener("keypress", (event) => {
-          if (event.key === 'Enter' || event.keyCode === 13) {
-              event.preventDefault();
-              navigateToPage();
-          }
-      });    
+    const pageInput = document.getElementById("page-input");
+    const goToPageBtn = document.getElementById("go-to-page-btn");
+
+    const navigateToPage = () => {
+      let pageToGo = Number(pageInput.value);
+
+      if (pageToGo >= 1 && pageToGo <= totalPaginas) {
+        renderizarSkins(pageToGo);
+        pageInput.value = '';
+      } else {
+        alert(`Por favor, insira um número entre 1 e ${totalPaginas}.`);
+        pageInput.value = '';
+      }
+    };
+
+    goToPageBtn.addEventListener("click", navigateToPage);
+
+    pageInput.addEventListener("keypress", (event) => {
+      if (event.key === 'Enter' || event.keyCode === 13) {
+        event.preventDefault();
+        navigateToPage();
+      }
+    });
   }
 
 
