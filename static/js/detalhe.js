@@ -6,6 +6,7 @@ const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const btnLimparData = document.getElementById("btn-limpar-data");
 let DateGraph = null;
+let marcadorDataset = null; // armazenará o dataset do marcador
 
 // ------------------ FUNÇÕES AUXILIARES ------------------
 
@@ -181,41 +182,62 @@ function configurarAbas() {
 }
 
 // ------------------ GRÁFICO ------------------
-
 function renderizarGrafico(historico) {
   const ctx = document.getElementById('grafico').getContext('2d');
 
-  new Chart(ctx, {
+  const grafico = new Chart(ctx, {
     type: 'line',
     data: {
       labels: historico.map(h => h.dateObj.toISOString().split('T')[0]),
-      datasets: [{
-        label: 'Preço (US$)',
-        data: historico.map(h => h.preco),
-        borderColor: '#28a745',
-        backgroundColor: 'rgba(40,167,69,0.1)',
-        fill: true,
-        tension: 0.2,
-        borderWidth: 0.6,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHitRadius: 20
-      }]
+      datasets: [
+        {
+          label: 'Preço (US$)',
+          data: historico.map(h => h.preco),
+          borderColor: '#28a745',
+          backgroundColor: 'rgba(40,167,69,0.1)',
+          fill: true,
+          tension: 0.2,
+          borderWidth: 0.6,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHitRadius: 20
+        }
+      ]
     },
     options: {
       onClick: async (event, elements) => {
         if (elements.length > 0) {
           const index = elements[0].index;
-          DateGraph = historico[index].dateObj;
+          const DateGraph = historico[index].dateObj;
           console.log("Data clicada:", DateGraph);
 
-          // --- NOVO: atualiza notícias e discussões para a data clicada ---
+          // --- Atualiza notícias e discussões ---
           const nome = getSkinNome()?.trim();
           const noticiasDia = await buscarNoticiasRelacionadasDia(nome);
           const discussoesDia = await buscarDiscussoesRelacionadasDia(nome);
 
           renderizarNoticias(noticiasDia);
           renderizarDiscussoes(discussoesDia);
+
+          // --- Adiciona bolinha vermelha ---
+          const valor = historico[index].preco;
+
+          // Remove marcador anterior
+          if (marcadorDataset) {
+            grafico.data.datasets.pop();
+          }
+
+          marcadorDataset = {
+            label: 'Marcador',
+            data: [{ x: index, y: valor }],
+            pointBackgroundColor: 'red',
+            pointRadius: 8,
+            type: 'scatter',
+            showLine: false
+          };
+
+          grafico.data.datasets.push(marcadorDataset);
+          grafico.update();
         }
       },
       scales: {
@@ -224,7 +246,10 @@ function renderizarGrafico(historico) {
       }
     }
   });
+
+  return grafico;
 }
+
 
 
 // ------------------ INICIALIZAÇÃO ------------------
@@ -265,6 +290,7 @@ async function renderizarDetalhe() {
   // Botão limpar data
   btnLimparData?.addEventListener("click", async () => {
     DateGraph = null;
+    marcadorDataset = null;
     console.log("Data limpa!");
 
     // Re-renderiza todas as notícias e discussões
