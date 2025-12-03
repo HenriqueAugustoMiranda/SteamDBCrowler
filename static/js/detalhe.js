@@ -4,14 +4,17 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const btnLimparData = document.getElementById("btn-limpar-data");
 let DateGraph = null;
 
-// ------------------ FUNÇÕES ------------------
+// ------------------ FUNÇÕES AUXILIARES ------------------
 
 function getSkinNome() {
   const params = new URLSearchParams(window.location.search);
   return params.get("nome");
 }
+
+// ------------------ BUSCAS ------------------
 
 async function buscarSkin(nome) {
   const { data: skinData } = await client
@@ -59,6 +62,17 @@ async function buscarDiscussoesRelacionadas(nome) {
   return data || [];
 }
 
+// Funções por data (confirme os nomes no Supabase!)
+async function buscarNoticiasRelacionadasDia(nome) {
+  const { data } = await client.rpc("news_skins_date_gap", { s_name: nome, target_date: DateGraph });
+  return data || [];
+}
+
+async function buscarDiscussoesRelacionadasDia(nome) {
+  const { data } = await client.rpc("discussions_skins_date_gap", { s_name: nome, target_date: DateGraph });
+  return data || [];
+}
+
 // ------------------ RENDERIZAÇÃO ------------------
 
 function renderizarNoticias(lista) {
@@ -101,53 +115,34 @@ function renderizarDiscussoes(lista) {
   });
 }
 
-// ------------------ ABAS (CORRIGIDO PARA SEU HTML) ------------------
+// ------------------ ABAS ------------------
 
 function configurarAbas() {
-  // IDs possíveis (compatibilidade com versões antigas/novas)
   const possibleAbaNoticias = ["chooseN", "aba-noticias"];
-  const possibleAbaDiscuss  = ["chooseD", "aba-discuss"];
-  const possibleNewsBoxes   = ["news-section", "news-box"];
+  const possibleAbaDiscuss = ["chooseD", "aba-discuss"];
+  const possibleNewsBoxes = ["news-section", "news-box"];
   const possibleDiscussBoxes = ["discussion-container", "discussion-box"];
 
-  // pega o primeiro elemento existente dentre os ids
-  const pickEl = (ids) => {
-    for (const id of ids) {
-      const el = document.getElementById(id);
-      if (el) return el;
-    }
-    return null;
-  };
+  const pickEl = (ids) => ids.map(id => document.getElementById(id)).find(el => el);
 
   const abaNoticias = pickEl(possibleAbaNoticias);
-  const abaDiscuss  = pickEl(possibleAbaDiscuss);
+  const abaDiscuss = pickEl(possibleAbaDiscuss);
   const boxNoticias = pickEl(possibleNewsBoxes);
-  const boxDiscuss  = pickEl(possibleDiscussBoxes);
+  const boxDiscuss = pickEl(possibleDiscussBoxes);
 
-  // debug: se faltar algo, loga e tenta continuar
-  if (!abaNoticias) console.warn("configurarAbas: abaNoticias não encontrada. IDs esperados:", possibleAbaNoticias);
-  if (!abaDiscuss)  console.warn("configurarAbas: abaDiscuss não encontrada. IDs esperados:", possibleAbaDiscuss);
-  if (!boxNoticias) console.warn("configurarAbas: boxNoticias não encontrada. IDs esperados:", possibleNewsBoxes);
-  if (!boxDiscuss)  console.warn("configurarAbas: boxDiscuss não encontrada. IDs esperados:", possibleDiscussBoxes);
+  if (!boxNoticias && !boxDiscuss) return;
 
-  // garante que existam containers antes de continuar
-  if (!boxNoticias && !boxDiscuss) {
-    console.warn("configurarAbas: nenhum container de abas encontrado. abortando configuração.");
-    return;
-  }
-
-  // inicializa estado visual (notícias visível por padrão)
+  // Estado inicial
   if (boxNoticias) boxNoticias.style.display = "block";
-  if (boxDiscuss)  boxDiscuss.style.display = "none";
+  if (boxDiscuss) boxDiscuss.style.display = "none";
+  if (abaNoticias) abaNoticias.classList.add("active");
 
-  // deixa h2/tab acessível como botão (role + tabindex + cursor)
   const prepareAsButton = (el) => {
     if (!el) return;
     el.setAttribute("role", "button");
     el.setAttribute("tabindex", "0");
     el.style.cursor = "pointer";
-    // tecla Enter ou Space também ativa
-    el.addEventListener("keydown", (ev) => {
+    el.addEventListener("keydown", ev => {
       if (ev.key === "Enter" || ev.key === " ") {
         ev.preventDefault();
         el.click();
@@ -158,80 +153,79 @@ function configurarAbas() {
   prepareAsButton(abaNoticias);
   prepareAsButton(abaDiscuss);
 
-  // utilitários de ativação
   const ativarNoticias = () => {
     if (abaNoticias) abaNoticias.classList.add("active");
-    if (abaDiscuss)  abaDiscuss.classList.remove("active");
+    if (abaDiscuss) abaDiscuss.classList.remove("active");
     if (boxNoticias) boxNoticias.style.display = "block";
-    if (boxDiscuss)  boxDiscuss.style.display = "none";
+    if (boxDiscuss) boxDiscuss.style.display = "none";
   };
 
   const ativarDiscuss = () => {
-    if (abaDiscuss)  abaDiscuss.classList.add("active");
+    if (abaDiscuss) abaDiscuss.classList.add("active");
     if (abaNoticias) abaNoticias.classList.remove("active");
     if (boxNoticias) boxNoticias.style.display = "none";
-    if (boxDiscuss)  boxDiscuss.style.display = "block";
+    if (boxDiscuss) boxDiscuss.style.display = "block";
   };
 
-  // listeners só se existirem
-  if (abaNoticias) {
-    abaNoticias.addEventListener("click", () => {
-      ativarNoticias();
-      // opcional: rolar para o topo da aba
-      boxNoticias?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  } else {
-    // fallback: se não tem botão, garante notícias visíveis
+  if (abaNoticias) abaNoticias.addEventListener("click", () => {
     ativarNoticias();
-  }
+    boxNoticias?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
-  if (abaDiscuss) {
-    abaDiscuss.addEventListener("click", () => {
-      ativarDiscuss();
-      boxDiscuss?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
+  if (abaDiscuss) abaDiscuss.addEventListener("click", () => {
+    ativarDiscuss();
+    boxDiscuss?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
-  // retorna helpers (útil para testes)
   return { ativarNoticias, ativarDiscuss };
 }
-
-
 
 // ------------------ GRÁFICO ------------------
 
 function renderizarGrafico(historico) {
-  const ctx = document.getElementById("grafico").getContext("2d");
+  const ctx = document.getElementById('grafico').getContext('2d');
 
   new Chart(ctx, {
-    type: "line",
+    type: 'line',
     data: {
-      labels: historico.map(h => h.dateObj.toISOString().split("T")[0]),
-      datasets: [
-        {
-          label: "Preço (US$)",
-          data: historico.map(h => h.preco),
-          borderColor: "#28a745",
-          backgroundColor: "rgba(40,167,69,0.1)",
-          fill: true,
-          tension: 0.2,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointHitRadius: 20
-        }
-      ]
+      labels: historico.map(h => h.dateObj.toISOString().split('T')[0]),
+      datasets: [{
+        label: 'Preço (US$)',
+        data: historico.map(h => h.preco),
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40,167,69,0.1)',
+        fill: true,
+        tension: 0.2,
+        borderWidth: 0.6,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 20
+      }]
     },
     options: {
-      onClick: (evt, elems) => {
-        if (elems.length > 0) {
-          const index = elems[0].index;
-          DateGraph = historico[index].dateObj.toISOString().split("T")[0];
-          console.log("DateGraph =", DateGraph);
+      onClick: async (event, elements) => {
+        if (elements.length > 0) {
+          const index = elements[0].index;
+          DateGraph = historico[index].dateObj;
+          console.log("Data clicada:", DateGraph);
+
+          // --- NOVO: atualiza notícias e discussões para a data clicada ---
+          const nome = getSkinNome()?.trim();
+          const noticiasDia = await buscarNoticiasRelacionadasDia(nome);
+          const discussoesDia = await buscarDiscussoesRelacionadasDia(nome);
+
+          renderizarNoticias(noticiasDia);
+          renderizarDiscussoes(discussoesDia);
         }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Data' } },
+        y: { title: { display: true, text: 'Preço (US$)' } }
       }
     }
   });
 }
+
 
 // ------------------ INICIALIZAÇÃO ------------------
 
@@ -242,9 +236,9 @@ async function renderizarDetalhe() {
   const noticias = await buscarNoticiasRelacionadas(nome);
   const discussoes = await buscarDiscussoesRelacionadas(nome);
 
+  // Render do detalhe
   document.getElementById("skin-nome").textContent = skin.nome;
   document.getElementById("skin-img").src = link_inicio + skin.img;
-
   document.getElementById("skin-info").innerHTML = `
       <strong>Arma:</strong> ${skin.arma}<br>
       <strong>Preço atual:</strong> ${skin.preco}<br>
@@ -253,9 +247,35 @@ async function renderizarDetalhe() {
 
   if (historico.length > 0) renderizarGrafico(historico);
 
-  renderizarNoticias(noticias);
-  renderizarDiscussoes(discussoes);
+  // Render inicial de notícias/discussões
+  if (DateGraph === null) {
+    renderizarNoticias(noticias);
+    renderizarDiscussoes(discussoes);
+  } else {
+    const noticiasDia = await buscarNoticiasRelacionadasDia(nome);
+    const discussoesDia = await buscarDiscussoesRelacionadasDia(nome);
+
+    renderizarNoticias(noticiasDia);
+    renderizarDiscussoes(discussoesDia);
+  }
+
+  // Configura abas
   configurarAbas();
+
+  // Botão limpar data
+  btnLimparData?.addEventListener("click", async () => {
+    DateGraph = null;
+    console.log("Data limpa!");
+
+    // Re-renderiza todas as notícias e discussões
+    const noticias = await buscarNoticiasRelacionadas(nome);
+    const discussoes = await buscarDiscussoesRelacionadas(nome);
+
+    renderizarNoticias(noticias);
+    renderizarDiscussoes(discussoes);
+  });
 }
+
+// ------------------ EXECUÇÃO ------------------
 
 renderizarDetalhe();
