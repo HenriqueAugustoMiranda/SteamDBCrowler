@@ -170,19 +170,19 @@ document.addEventListener("DOMContentLoaded", () => {
     renderizarSkins(1); // volta para primeira página
   });
 
-  async function verificarSenha(email, senha) {
-    const { data, error } = await client
-      .from("users")
-      .select("password")
-      .eq("email", email)
-      .single();
-    if (error) {
-      console.error("Erro ao verificar login:", error);
-      return false;
-    }
-    return data.password === senha;
-  }
+  async function verificarSenha(email, senhaDigitada) {
+  const { data, error } = await client
+    .from("users")
+    .select("password_hash, password_salt")
+    .eq("email", email)
+    .single();
 
+  if (error || !data) return false;
+
+  const hashDigitado = await hashPBKDF2(senhaDigitada, data.password_salt);
+
+  return hashDigitado === data.password_hash;
+}
   async function verificarUsuario(email) {
     const { data, error } = await client
       .from("users")
@@ -249,20 +249,57 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Erro na requisição para obter interesses:", err);
       return [];
     }
-  }
+  } 
+
+  async function hashPBKDF2(password, salt) {
+  const encoder = new TextEncoder();
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: encoder.encode(salt),
+      iterations: 100000,
+      hash: "SHA-512"
+    },
+    key,
+    512
+  );
+
+  const hashArray = Array.from(new Uint8Array(bits));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
   async function cadastrarUsuario(email, senha, pnome, unome) {
-    const { data, error } = await client
-      .from("users")
-      .insert([{ email: email, password: senha, ft_name: pnome, lt_name: unome }]);
-    if (error) {
-      console.error("Erro ao cadastrar usuário:", error);
-      return false;
-    }
-    return true;
+  
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+    .reduce((acc, b) => acc + b.toString(16).padStart(2, "0"), "");
+
+  const senhaHash = await hashPBKDF2(senha, salt);
+
+  const { error } = await client
+    .from("users")
+    .insert([{
+      email: email,
+      password_hash: senhaHash,
+      password_salt: salt,
+      ft_name: pnome,
+      lt_name: unome
+    }]);
+
+  if (error) {
+    console.error("Erro ao cadastrar usuário:", error);
+    return false;
   }
-
-
+  return true;
+}
 
   async function carregarTodasSkins() {
     const todasSkins = [];
